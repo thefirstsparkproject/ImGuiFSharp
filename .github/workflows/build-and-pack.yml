@@ -15,7 +15,9 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libwayland-dev wayland-protocols libxkbcommon-dev extra-cmake-modules
 
       - name: Build C++ Library
         run: |
