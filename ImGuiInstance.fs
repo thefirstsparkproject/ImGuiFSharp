@@ -7,13 +7,15 @@ open Microsoft.FSharp.Core
 type ImGuiInstance(backend: IImGuiBackend) =
 
     let impl = ImGuiImpl()
+    let nodeEditorImpl = NodeEditorImpl()
     let mutable context = 0n
 
     // ── Public interface accessors (cast F# type to the declared interface) ──
-    member _.GuiImpl    : IGuiFunctions    = impl :> IGuiFunctions
-    member _.PlotImpl   : IPlotFunctions   = impl :> IPlotFunctions
-    member _.Plot3DImpl : IPlot3DFunctions = impl :> IPlot3DFunctions
-    member _.FontsImpl  : IFontFunctions   = impl :> IFontFunctions
+    member _.GuiImpl        : IGuiFunctions        = impl :> IGuiFunctions
+    member _.PlotImpl       : IPlotFunctions       = impl :> IPlotFunctions
+    member _.Plot3DImpl     : IPlot3DFunctions     = impl :> IPlot3DFunctions
+    member _.FontsImpl      : IFontFunctions       = impl :> IFontFunctions
+    member _.NodeEditorImpl : INodeEditorFunctions = nodeEditorImpl :> INodeEditorFunctions
 
     // Full-screen window settings
     member val FullScreenWindow = false with get, set
@@ -52,6 +54,7 @@ type ImGuiInstance(backend: IImGuiBackend) =
             Plot = this.PlotImpl
             Plot3D = this.Plot3DImpl
             Fonts = this.FontsImpl
+            NodeEditor = this.NodeEditorImpl
         }
 
         if this.FullScreenWindow then

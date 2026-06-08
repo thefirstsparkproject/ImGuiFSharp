@@ -204,6 +204,87 @@ type IFontFunctions =
     abstract AddFontFromFile : path: string * sizePixels: float32 -> int
     abstract Build           : unit -> bool
 
+/// PinKind mirrors ax::NodeEditor::PinKind
+type PinKind = Input = 0 | Output = 1
+
+/// FlowDirection mirrors ax::NodeEditor::FlowDirection
+type FlowDirection = Forward = 0 | Backward = 1
+
+/// Node editor (imgui-node-editor by thedmd) high-level interface.
+/// Each ImGuiInstance owns exactly one node-editor context lifetime;
+/// use CreateEditor / DestroyEditor to manage additional contexts.
+type INodeEditorFunctions =
+    // ── Context ──────────────────────────────────────────────────────────
+    /// Creates an editor context. Pass None for the default settings file.
+    abstract CreateEditor       : ?settingsFile: string -> nativeint
+    abstract DestroyEditor      : ctx: nativeint -> unit
+    abstract SetCurrentEditor   : ctx: nativeint -> unit
+
+    // ── Frame ─────────────────────────────────────────────────────────────
+    /// Begin node editor canvas. w/h = 0 means fill available space.
+    abstract Begin              : id: string * ?width: float32 * ?height: float32 -> unit
+    abstract End                : unit -> unit
+
+    // ── Nodes ─────────────────────────────────────────────────────────────
+    abstract BeginNode          : nodeId: int64 -> unit
+    abstract EndNode            : unit -> unit
+    abstract SetNodePosition    : nodeId: int64 * x: float32 * y: float32 -> unit
+    abstract GetNodePosition    : nodeId: int64 -> float32 * float32
+    abstract GetNodeSize        : nodeId: int64 -> float32 * float32
+
+    // ── Pins ──────────────────────────────────────────────────────────────
+    abstract BeginPin           : pinId: int64 * kind: PinKind -> unit
+    abstract EndPin             : unit -> unit
+    abstract PinRect            : ax: float32 * ay: float32 * bx: float32 * by: float32 -> unit
+    abstract PinPivotRect       : ax: float32 * ay: float32 * bx: float32 * by: float32 -> unit
+
+    // ── Links ─────────────────────────────────────────────────────────────
+    abstract Link               : linkId: int64 * startPinId: int64 * endPinId: int64
+                                   * ?r: float32 * ?g: float32 * ?b: float32 * ?a: float32
+                                   * ?thickness: float32 -> unit
+    abstract Flow               : linkId: int64 * ?direction: FlowDirection -> unit
+
+    // ── Selection & navigation ────────────────────────────────────────────
+    abstract NavigateToContent  : ?duration: float32 -> unit
+    abstract NavigateToSelection: ?zoomIn: bool * ?duration: float32 -> unit
+    abstract IsNodeSelected     : nodeId: int64 -> bool
+    abstract IsLinkSelected     : linkId: int64 -> bool
+    abstract SelectNode         : nodeId: int64 * ?append: bool -> unit
+    abstract DeselectNode       : nodeId: int64 -> unit
+    abstract SelectLink         : linkId: int64 * ?append: bool -> unit
+    abstract DeselectLink       : linkId: int64 -> unit
+    abstract ClearSelection     : unit -> unit
+    abstract GetSelectedObjectCount : unit -> int
+
+    // ── Create interaction ────────────────────────────────────────────────
+    /// Returns true while the user is hovering over a pin to create a link.
+    abstract BeginCreate        : ?r: float32 * ?g: float32 * ?b: float32 * ?a: float32 * ?thickness: float32 -> bool
+    abstract EndCreate          : unit -> unit
+    /// Returns (true, startPinId, endPinId) when the user is dragging a new link.
+    abstract QueryNewLink       : unit -> bool * int64 * int64
+    /// Returns (true, pinId) when the user hovers empty canvas to create a node.
+    abstract QueryNewNode       : unit -> bool * int64
+    abstract AcceptNewItem      : ?r: float32 * ?g: float32 * ?b: float32 * ?a: float32 * ?thickness: float32 -> bool
+    abstract RejectNewItem      : ?r: float32 * ?g: float32 * ?b: float32 * ?a: float32 * ?thickness: float32 -> unit
+
+    // ── Delete interaction ────────────────────────────────────────────────
+    abstract BeginDelete        : unit -> bool
+    abstract EndDelete          : unit -> unit
+    /// Returns (true, linkId, startPinId, endPinId) when a link is to be deleted.
+    abstract QueryDeletedLink   : unit -> bool * int64 * int64 * int64
+    /// Returns (true, nodeId) when a node is to be deleted.
+    abstract QueryDeletedNode   : unit -> bool * int64
+    abstract AcceptDeletedItem  : ?deleteDependencies: bool -> bool
+    abstract RejectDeletedItem  : unit -> unit
+
+    // ── Suspend / Resume ──────────────────────────────────────────────────
+    abstract Suspend            : unit -> unit
+    abstract Resume             : unit -> unit
+
+    // ── Utility ───────────────────────────────────────────────────────────
+    abstract DeleteNode         : nodeId: int64 -> bool
+    abstract DeleteLink         : linkId: int64 -> bool
+
 /// Bundle of the core ImGui/ImPlot/Font interfaces.
 type GuiApi =
     {
@@ -211,6 +292,7 @@ type GuiApi =
         Plot : IPlotFunctions
         Plot3D : IPlot3DFunctions
         Fonts : IFontFunctions
+        NodeEditor : INodeEditorFunctions
     }
 
 /// The layout builder interface implemented to draw widgets.
