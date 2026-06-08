@@ -3,14 +3,6 @@ name: Build and Pack ImGuiFSharp
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'cpp/**'
-      - 'IGuiFunctions.fs'
-      - 'ImGuiInstance.fs'
-      - 'ImGuiInternal.fs'
-      - 'ImGuiFSharp.fsproj'
-      - 'build_native.sh'
-      - '.github/workflows/build-and-pack.yml'
   workflow_dispatch:
 
 jobs:
