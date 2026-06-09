@@ -1,6 +1,5 @@
 namespace ImGuiFSharp
 
-open System
 open ImGuiFSharp.NodeEditorNative
 
 /// PinKind mirrors ax::NodeEditor::PinKind

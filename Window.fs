@@ -30,7 +30,7 @@ type public Window(width: int, height: int, title: string, [<Optional; DefaultPa
         for i in 0 .. count - 1 do
             let strPtr = Marshal.ReadIntPtr(ptr, i * IntPtr.Size)
             let s = Marshal.PtrToStringUTF8(strPtr)
-            arr.[i] <- Option.ofObj s |> Option.defaultValue ""
+            arr[i] <- Option.ofObj s |> Option.defaultValue ""
         dropEvent.Trigger(arr)
     )
     

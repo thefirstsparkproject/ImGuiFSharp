@@ -1,6 +1,5 @@
 namespace ImGuiFSharp
 
-open System
 open System.Runtime.InteropServices
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -608,11 +607,11 @@ module internal ImGuiNative =
 // Helper: pin a bool ref and call a native function that may modify it
 module internal BoolPtr =
     let inline withRef (r: bool ref) (f: nativeint -> 'a) =
-        let arr = [| (if !r then 1uy else 0uy) |]
+        let arr = [| (if r.Value then 1uy else 0uy) |]
         let h = GCHandle.Alloc(arr, GCHandleType.Pinned)
         try
             let result = f (h.AddrOfPinnedObject())
-            r := (arr.[0] <> 0uy)
+            r.Value <- arr[0] <> 0uy
             result
         finally h.Free()
 

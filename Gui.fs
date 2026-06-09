@@ -28,26 +28,30 @@ type public Gui = class
                     let src = decoded.ToCharArray()
                     let len = min src.Length buf.Length
                     Array.blit src 0 buf 0 len
-                    for i in len .. buf.Length - 1 do buf.[i] <- '\000'
+                    for i in len .. buf.Length - 1 do buf[i] <- '\000'
                 r
             finally h.Free()
 
-        static member InputFloat(label, v, ?step, ?stepFast, ?fmt, ?flags) =
-            let mutable vv = !v
+        static member InputFloat(label, v : float32 ref, ?step, ?stepFast, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_InputFloat(label, &vv, defaultArg step 0f, defaultArg stepFast 0f, defaultArg fmt "%.3f", defaultArg flags 0)
-            v := vv; r
-        static member InputInt(label, v, ?step, ?stepFast, ?flags) =
-            let mutable vv = !v
+            v.Value <- vv
+            r
+        static member InputInt(label, v : int ref, ?step, ?stepFast, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_InputInt(label, &vv, defaultArg step 1, defaultArg stepFast 100, defaultArg flags 0)
-            v := vv; r
-        static member SliderFloat(label, v, min, max, ?fmt, ?flags) =
-            let mutable vv = !v
+            v.Value <- vv
+            r
+        static member SliderFloat(label, v : float32 ref, min, max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_SliderFloat(label, &vv, min, max, defaultArg fmt "%.3f", defaultArg flags 0)
-            v := vv; r
-        static member SliderInt(label, v, min, max, ?fmt, ?flags) =
-            let mutable vv = !v
+            v.Value <- vv
+            r
+        static member SliderInt(label, v : int ref, min, max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_SliderInt(label, &vv, min, max, defaultArg fmt "%d", defaultArg flags 0)
-            v := vv; r
+            v.Value <- vv
+            r
         static member Checkbox(label, v) =
             BoolPtr.withRef v (fun ptr -> ImGuiNative.IGN_Checkbox(label, ptr))
         static member CollapsingHeader(label, ?flags) =
@@ -84,16 +88,18 @@ type public Gui = class
             ImGuiNative.IGN_BeginMenu(label, defaultArg enabled true)
         static member EndMenu()      = ImGuiNative.IGN_EndMenu()
         static member MenuItem(label, ?shortcut, ?selected, ?enabled) =
-            ImGuiNative.IGN_MenuItem(label, defaultArg shortcut (Unchecked.defaultof<string>), defaultArg selected false, defaultArg enabled true)
+            ImGuiNative.IGN_MenuItem(label, defaultArg shortcut Unchecked.defaultof<string>, defaultArg selected false, defaultArg enabled true)
 
-        static member DragFloat(label, v, ?speed, ?min, ?max, ?fmt, ?flags) =
-            let mutable vv = !v
+        static member DragFloat(label, v : float32 ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_DragFloat(label, &vv, defaultArg speed 1f, defaultArg min 0f, defaultArg max 0f, defaultArg fmt "%.3f", defaultArg flags 0)
-            v := vv; r
-        static member DragInt(label, v, ?speed, ?min, ?max, ?fmt, ?flags) =
-            let mutable vv = !v
+            v.Value <- vv
+            r
+        static member DragInt(label, v : int ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_DragInt(label, &vv, defaultArg speed 1f, defaultArg min 0, defaultArg max 0, defaultArg fmt "%d", defaultArg flags 0)
-            v := vv; r
+            v.Value <- vv
+            r
 
         static member ColorEdit4(label, col, ?flags) =
             let h = GCHandle.Alloc(col, GCHandleType.Pinned)
@@ -102,31 +108,35 @@ type public Gui = class
 
         static member RadioButton(label, active) = ImGuiNative.IGN_RadioButton(label, active)
         static member ProgressBar(fraction, ?w, ?h, ?overlay) =
-            ImGuiNative.IGN_ProgressBar(fraction, defaultArg w -1f, defaultArg h 0f, defaultArg overlay (Unchecked.defaultof<string>))
+            ImGuiNative.IGN_ProgressBar(fraction, defaultArg w -1f, defaultArg h 0f, defaultArg overlay Unchecked.defaultof<string>)
         static member Image(texId, w, h) = ImGuiNative.IGN_Image(texId, w, h)
         static member ImageButton(id, texId, w, h) = ImGuiNative.IGN_ImageButton(id, texId, w, h)
         static member SetNextWindowPos(x, y, ?cond) = ImGuiNative.IGN_SetNextWindowPos(x, y, defaultArg cond 0)
         static member SetNextWindowSize(w, h, ?cond) = ImGuiNative.IGN_SetNextWindowSize(w, h, defaultArg cond 0)
         static member ShowDemoWindow(?pOpen) =
-            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_ShowDemoWindow(ptr))
+            BoolPtr.withOptRef pOpen ImGuiNative.IGN_ShowDemoWindow
+
         static member DockSpace(id, w, h, ?flags) =
             ImGuiNative.IGN_DockSpace(id, w, h, defaultArg flags 0)
 
         // Double-precision widgets
-        static member InputDouble(label, v, ?step, ?stepFast, ?fmt, ?flags) =
-            let mutable vv = !v
+        static member InputDouble(label, v : double ref, ?step, ?stepFast, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_InputDouble(label, &vv, defaultArg step 0.0, defaultArg stepFast 0.0, defaultArg fmt "%.6f", defaultArg flags 0)
-            v := vv; r
+            v.Value <- vv
+            r
 
-        static member DragDouble(label, v, ?speed, ?min, ?max, ?fmt, ?flags) =
-            let mutable vv = !v
+        static member DragDouble(label, v : double ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_DragDouble(label, &vv, defaultArg speed 1.0f, defaultArg min 0.0, defaultArg max 0.0, defaultArg fmt "%.6f", defaultArg flags 0)
-            v := vv; r
+            v.Value <- vv
+            r
 
-        static member SliderDouble(label, v, min, max, ?fmt, ?flags) =
-            let mutable vv = !v
+        static member SliderDouble(label, v : double ref, min, max, ?fmt, ?flags) =
+            let mutable vv = v.Value
             let r = ImGuiNative.IGN_SliderDouble(label, &vv, min, max, defaultArg fmt "%.6f", defaultArg flags 0)
-            v := vv; r
+            v.Value <- vv
+            r
 
         // Text variants
         static member TextColored(r, g, b, a, text) = ImGuiNative.IGN_TextColored(r, g, b, a, text)
@@ -145,7 +155,7 @@ type public Gui = class
                     let src = decoded.ToCharArray()
                     let len = min src.Length buf.Length
                     Array.blit src 0 buf 0 len
-                    for i in len .. buf.Length - 1 do buf.[i] <- '\000'
+                    for i in len .. buf.Length - 1 do buf[i] <- '\000'
                 r
             finally h.Free()
 
@@ -204,9 +214,9 @@ type public Gui = class
         static member EndPopup() = ImGuiNative.IGN_EndPopup()
         static member CloseCurrentPopup() = ImGuiNative.IGN_CloseCurrentPopup()
         static member BeginPopupContextItem(?strId, ?flags) =
-            ImGuiNative.IGN_BeginPopupContextItem(defaultArg strId (Unchecked.defaultof<string>), defaultArg flags 1)
+            ImGuiNative.IGN_BeginPopupContextItem(defaultArg strId Unchecked.defaultof<string>, defaultArg flags 1)
         static member BeginPopupContextWindow(?strId, ?flags) =
-            ImGuiNative.IGN_BeginPopupContextWindow(defaultArg strId (Unchecked.defaultof<string>), defaultArg flags 1)
+            ImGuiNative.IGN_BeginPopupContextWindow(defaultArg strId Unchecked.defaultof<string>, defaultArg flags 1)
 
         // Tab Bars & List Boxes
         static member BeginTabBar(strId, ?flags) = ImGuiNative.IGN_BeginTabBar(strId, defaultArg flags 0)
@@ -257,8 +267,8 @@ type public Gui = class
         static member EndPlot() = ImGuiNative.IGN_Plot_EndPlot()
         static member SetupAxes(xLabel, yLabel, ?xFlags, ?yFlags) =
             ImGuiNative.IGN_Plot_SetupAxes(xLabel, yLabel, defaultArg xFlags 0, defaultArg yFlags 0)
-        static member PlotLine(label, values: float32[], ?xscale, ?x0) =
-            ImGuiNative.IGN_Plot_PlotLine_FloatPtrInt(label, values, values.Length, defaultArg xscale 1.0, defaultArg x0 0.0, 0, sizeof<float32>)
+        static member PlotLine(label, values: float32[], ?xScale, ?x0) =
+            ImGuiNative.IGN_Plot_PlotLine_FloatPtrInt(label, values, values.Length, defaultArg xScale 1.0, defaultArg x0 0.0, 0, sizeof<float32>)
         static member PlotBars(label, values: float32[], ?barSize, ?shift) =
             ImGuiNative.IGN_Plot_PlotBars_FloatPtrInt(label, values, values.Length, defaultArg barSize 0.67, defaultArg shift 0.0, 0, sizeof<float32>)
         static member PlotScatter(label, xs: float32[], ys: float32[]) =
@@ -281,8 +291,8 @@ type public Gui = class
             ImGuiNative.IGN_Plot_SetupAxisFormat(axis, fmt)
 
         // Double precision plotting
-        static member PlotLine(label: string, values: double[], ?xscale: double, ?x0: double) =
-            ImGuiNative.IGN_Plot_PlotLine_DoublePtrInt(label, values, values.Length, defaultArg xscale 1.0, defaultArg x0 0.0, 0, sizeof<double>)
+        static member PlotLine(label: string, values: double[], ?xScale: double, ?x0: double) =
+            ImGuiNative.IGN_Plot_PlotLine_DoublePtrInt(label, values, values.Length, defaultArg xScale 1.0, defaultArg x0 0.0, 0, sizeof<double>)
         static member PlotLine(label: string, xs: double[], ys: double[]) =
             ImGuiNative.IGN_Plot_PlotLine_DoublePtrPtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<double>)
         static member PlotLine(label: string, xs: DateTime[], ys: double[]) =
@@ -301,16 +311,16 @@ type public Gui = class
         static member PlotPieChart(labels: string[], values: double[], x: double, y: double, radius: double, ?labelFmt: string, ?angle0: double) =
             let count = min labels.Length values.Length
             let handles = Array.zeroCreate<GCHandle> count
-            let ptrs = Array.zeroCreate<nativeint> count
+            let pointers = Array.zeroCreate<nativeint> count
             try
                 for i in 0 .. count - 1 do
-                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
-                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
-                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
-                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels[i] + "\0")
+                    handles[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    pointers[i] <- handles[i].AddrOfPinnedObject()
+                let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotPieChart(ptrsHandle.AddrOfPinnedObject(), values, count, x, y, radius, defaultArg labelFmt "%p", defaultArg angle0 90.0)
-                finally ptrsHandle.Free()
+                    ImGuiNative.IGN_Plot_PlotPieChart(pointersHandle.AddrOfPinnedObject(), values, count, x, y, radius, defaultArg labelFmt "%p", defaultArg angle0 90.0)
+                finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
 
@@ -368,16 +378,16 @@ type public Gui = class
         static member PlotPieChart(labels: string[], values: float32[], x: double, y: double, radius: double, ?labelFmt: string, ?angle0: double) =
             let count = min labels.Length values.Length
             let handles = Array.zeroCreate<GCHandle> count
-            let ptrs    = Array.zeroCreate<nativeint> count
+            let pointers    = Array.zeroCreate<nativeint> count
             try
                 for i in 0 .. count - 1 do
-                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
-                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
-                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
-                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels[i] + "\0")
+                    handles[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    pointers[i] <- handles[i].AddrOfPinnedObject()
+                let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotPieChart_Float(ptrsHandle.AddrOfPinnedObject(), values, count, x, y, radius, defaultArg labelFmt "%p", defaultArg angle0 90.0)
-                finally ptrsHandle.Free()
+                    ImGuiNative.IGN_Plot_PlotPieChart_Float(pointersHandle.AddrOfPinnedObject(), values, count, x, y, radius, defaultArg labelFmt "%p", defaultArg angle0 90.0)
+                finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
 
@@ -395,33 +405,32 @@ type public Gui = class
 
         // ImPlot — Bar Groups (same label-pinning pattern as PlotPieChart)
         static member PlotBarGroups(labels: string[], values: float32[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
-            let count = min labels.Length (values.Length / (max 1 groupCount))
             let handles = Array.zeroCreate<GCHandle> labels.Length
-            let ptrs    = Array.zeroCreate<nativeint> labels.Length
+            let pointers    = Array.zeroCreate<nativeint> labels.Length
             try
                 for i in 0 .. labels.Length - 1 do
-                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
-                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
-                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
-                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels[i] + "\0")
+                    handles[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    pointers[i] <- handles[i].AddrOfPinnedObject()
+                let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotBarGroups_FloatPtr(ptrsHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
-                finally ptrsHandle.Free()
+                    ImGuiNative.IGN_Plot_PlotBarGroups_FloatPtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
 
         static member PlotBarGroups(labels: string[], values: double[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
             let handles = Array.zeroCreate<GCHandle> labels.Length
-            let ptrs    = Array.zeroCreate<nativeint> labels.Length
+            let pointers    = Array.zeroCreate<nativeint> labels.Length
             try
                 for i in 0 .. labels.Length - 1 do
-                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
-                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
-                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
-                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels[i] + "\0")
+                    handles[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    pointers[i] <- handles[i].AddrOfPinnedObject()
+                let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotBarGroups_DoublePtr(ptrsHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
-                finally ptrsHandle.Free()
+                    ImGuiNative.IGN_Plot_PlotBarGroups_DoublePtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
 
@@ -444,14 +453,14 @@ type public Gui = class
         static member PlotHistogram(label: string, values: double[], ?bins: int, ?barScale: double, ?rangeMin: double, ?rangeMax: double) =
             ImGuiNative.IGN_Plot_PlotHistogram_DoublePtr(label, values, values.Length,
                 defaultArg bins -1, defaultArg barScale 1.0, defaultArg rangeMin 0.0, defaultArg rangeMax 0.0, 0, sizeof<double>)
-        static member PlotHistogram2D(label, xs: float32[], ys: float32[], ?xBins: int, ?yBins: int, ?xmin: double, ?xmax: double, ?ymin: double, ?ymax: double) =
+        static member PlotHistogram2D(label, xs: float32[], ys: float32[], ?xBins: int, ?yBins: int, ?xMin: double, ?xMax: double, ?yMin: double, ?yMax: double) =
             ImGuiNative.IGN_Plot_PlotHistogram2D_FloatPtr(label, xs, ys, min xs.Length ys.Length,
                 defaultArg xBins -1, defaultArg yBins -1,
-                defaultArg xmin 0.0, defaultArg xmax 0.0, defaultArg ymin 0.0, defaultArg ymax 0.0, 0, sizeof<float32>)
-        static member PlotHistogram2D(label: string, xs: double[], ys: double[], ?xBins: int, ?yBins: int, ?xmin: double, ?xmax: double, ?ymin: double, ?ymax: double) =
+                defaultArg xMin 0.0, defaultArg xMax 0.0, defaultArg yMin 0.0, defaultArg yMax 0.0, 0, sizeof<float32>)
+        static member PlotHistogram2D(label: string, xs: double[], ys: double[], ?xBins: int, ?yBins: int, ?xMin: double, ?xMax: double, ?yMin: double, ?yMax: double) =
             ImGuiNative.IGN_Plot_PlotHistogram2D_DoublePtr(label, xs, ys, min xs.Length ys.Length,
                 defaultArg xBins -1, defaultArg yBins -1,
-                defaultArg xmin 0.0, defaultArg xmax 0.0, defaultArg ymin 0.0, defaultArg ymax 0.0, 0, sizeof<double>)
+                defaultArg xMin 0.0, defaultArg xMax 0.0, defaultArg yMin 0.0, defaultArg yMax 0.0, 0, sizeof<double>)
 
         // ImPlot — Digital
         static member PlotDigital(label, xs: float32[], ys: float32[]) =
@@ -478,10 +487,10 @@ type public Gui = class
             ImGuiNative.IGN_Plot3D_PlotQuad_Double(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<double>)
 
         // ImPlot3D — Mesh
-        static member PlotMesh3D(label, xs: float32[], ys: float32[], zs: float32[], idxs: uint32[]) =
-            ImGuiNative.IGN_Plot3D_PlotMesh(label, xs, ys, zs, idxs, xs.Length, idxs.Length, 0, sizeof<float32>)
-        static member PlotMesh3D(label: string, xs: double[], ys: double[], zs: double[], idxs: uint32[]) =
-            ImGuiNative.IGN_Plot3D_PlotMesh_Double(label, xs, ys, zs, idxs, xs.Length, idxs.Length, 0, sizeof<double>)
+        static member PlotMesh3D(label, xs: float32[], ys: float32[], zs: float32[], indices: uint32[]) =
+            ImGuiNative.IGN_Plot3D_PlotMesh(label, xs, ys, zs, indices, xs.Length, indices.Length, 0, sizeof<float32>)
+        static member PlotMesh3D(label: string, xs: double[], ys: double[], zs: double[], indices: uint32[]) =
+            ImGuiNative.IGN_Plot3D_PlotMesh_Double(label, xs, ys, zs, indices, xs.Length, indices.Length, 0, sizeof<double>)
 
         // ImPlot3D — Text & Dummy
         static member PlotText3D(text: string, x: double, y: double, z: double, ?angle: double, ?pixOffsetX: float32, ?pixOffsetY: float32) =

@@ -1,6 +1,5 @@
 namespace ImGuiFSharp
 
-open System
 open System.Runtime.InteropServices
 
 [<UnmanagedFunctionPointer(CallingConvention.Winapi)>]
