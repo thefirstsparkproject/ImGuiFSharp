@@ -9,7 +9,7 @@ type PinKind = Input = 0 | Output = 1
 type FlowDirection = Forward = 0 | Backward = 1
 
 [<AbstractClass; Sealed>]
-type public NodeEditor = class
+type public NodeEditor = 
 
     // ── Context ─────────────────────────────────────────────────────────────
 
@@ -181,5 +181,3 @@ type public NodeEditor = class
 
     static member DeleteLink(linkId: int64) =
         IGNE_DeleteLink(linkId)
-
-end

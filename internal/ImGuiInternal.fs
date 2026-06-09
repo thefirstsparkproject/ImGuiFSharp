@@ -619,7 +619,3 @@ module internal BoolPtr =
         match r with
         | None   -> f 0n
         | Some r -> withRef r f
-
-// ══════════════════════════════════════════════════════════════════════════════
-// B. ImGuiImpl — implements the decoupled interface specifications
-// ══════════════════════════════════════════════════════════════════════════════

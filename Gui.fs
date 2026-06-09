@@ -4,7 +4,7 @@ open System
 open System.Runtime.InteropServices
 
 [<AbstractClass; Sealed>]
-type public Gui = class
+type public Gui = 
 
         // ══════════════════════════════════════════════════════════════════════════════
         // Initialization & Font Management
@@ -558,4 +558,3 @@ type public Gui = class
             ImGuiNative.IGN_Plot3D_PlotText(text, x, y, z, defaultArg angle 0.0, defaultArg pixOffsetX 0f, defaultArg pixOffsetY 0f)
         static member PlotDummy3D(labelId: string) =
             ImGuiNative.IGN_Plot3D_PlotDummy(labelId)
-end
