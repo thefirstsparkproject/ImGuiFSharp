@@ -14,12 +14,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Init cpp nested submodules (skip imgui_node_editor)
+      - name: Init cpp nested submodules
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
+          git -C cpp submodule update --init imgui_node_editor
 
       - name: Install dependencies
         run: |
@@ -46,12 +47,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Init cpp nested submodules (skip imgui_node_editor)
+      - name: Init cpp nested submodules
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
+          git -C cpp submodule update --init imgui_node_editor
 
       - name: Build C++ Library
         run: |
@@ -73,12 +75,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Init cpp nested submodules (skip imgui_node_editor)
+      - name: Init cpp nested submodules
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
+          git -C cpp submodule update --init imgui_node_editor
 
       - name: Build C++ Library
         run: |
