@@ -2,6 +2,8 @@ namespace ImGuiFSharp
 
 open System
 open System.Runtime.InteropServices
+open ImGuiFSharp.Flags
+open ImGuiFSharp.Enums
 
 [<AbstractClass; Sealed>]
 type public Gui = 
@@ -16,20 +18,20 @@ type public Gui =
         // ══════════════════════════════════════════════════════════════════════════════
         // Windows, Child Windows & Docking
         // ══════════════════════════════════════════════════════════════════════════════
-        static member Begin(name, ?pOpen, ?flags) =
+        static member Begin(name, ?pOpen, ?flags: Window) =
             BoolPtr.withOptRef pOpen (fun ptr ->
-                ImGuiNative.IGN_Begin(name, ptr, defaultArg flags 0))
+                ImGuiNative.IGN_Begin(name, ptr, defaultArg flags Window.None))
         static member End() = ImGuiNative.IGN_End()
 
-        static member BeginChild(strId, ?width, ?height, ?border, ?flags) =
-            ImGuiNative.IGN_BeginChild(strId, defaultArg width 0.f, defaultArg height 0.f, defaultArg border false, defaultArg flags 0)
+        static member BeginChild(strId, ?width, ?height, ?border, ?flags: Child) =
+            ImGuiNative.IGN_BeginChild(strId, defaultArg width 0.f, defaultArg height 0.f, defaultArg border false, defaultArg flags Child.None)
         static member EndChild() = ImGuiNative.IGN_EndChild()
 
-        static member DockSpace(id, w, h, ?flags) =
-            ImGuiNative.IGN_DockSpace(id, w, h, defaultArg flags 0)
+        static member DockSpace(id, w, h, ?flags: DockNode) =
+            ImGuiNative.IGN_DockSpace(id, w, h, defaultArg flags DockNode.None)
 
-        static member SetNextWindowPos(x, y, ?cond) = ImGuiNative.IGN_SetNextWindowPos(x, y, defaultArg cond 0)
-        static member SetNextWindowSize(w, h, ?cond) = ImGuiNative.IGN_SetNextWindowSize(w, h, defaultArg cond 0)
+        static member SetNextWindowPos(x, y, ?cond: Cond) = ImGuiNative.IGN_SetNextWindowPos(x, y, defaultArg cond Cond.None)
+        static member SetNextWindowSize(w, h, ?cond: Cond) = ImGuiNative.IGN_SetNextWindowSize(w, h, defaultArg cond Cond.None)
         static member SetNextWindowBgAlpha(alpha) = ImGuiNative.IGN_SetNextWindowBgAlpha(alpha)
 
         static member GetWindowPos() =
@@ -72,7 +74,7 @@ type public Gui =
         // ══════════════════════════════════════════════════════════════════════════════
         static member Button(label, ?w, ?h) =
             ImGuiNative.IGN_Button(label, defaultArg w 0f, defaultArg h 0f)
-        static member InvisibleButton(strId, w, h, ?flags) = ImGuiNative.IGN_InvisibleButton(strId, w, h, defaultArg flags 0)
+        static member InvisibleButton(strId, w, h, ?flags: Button) = ImGuiNative.IGN_InvisibleButton(strId, w, h, defaultArg flags Button.None)
         static member Checkbox(label, v) =
             BoolPtr.withRef v (fun ptr -> ImGuiNative.IGN_Checkbox(label, ptr))
         static member RadioButton(label, active) = ImGuiNative.IGN_RadioButton(label, active)
@@ -80,8 +82,8 @@ type public Gui =
             ImGuiNative.IGN_ProgressBar(fraction, defaultArg w -1f, defaultArg h 0f, defaultArg overlay Unchecked.defaultof<string>)
         static member Image(texId, w, h) = ImGuiNative.IGN_Image(texId, w, h)
         static member ImageButton(id, texId, w, h) = ImGuiNative.IGN_ImageButton(id, texId, w, h)
-        static member Selectable(label, selected, ?flags, ?width, ?height) =
-            ImGuiNative.IGN_Selectable(label, selected, defaultArg flags 0, defaultArg width 0f, defaultArg height 0f)
+        static member Selectable(label, selected, ?flags: Selectable, ?width, ?height) =
+            ImGuiNative.IGN_Selectable(label, selected, defaultArg flags Selectable.None, defaultArg width 0f, defaultArg height 0f)
 
         // ══════════════════════════════════════════════════════════════════════════════
         // Text Display & Input
@@ -91,14 +93,14 @@ type public Gui =
         static member TextDisabled(text)           = ImGuiNative.IGN_TextDisabled(text)
         static member TextWrapped(text)            = ImGuiNative.IGN_TextWrapped(text)
 
-        static member InputText(label, buf: char[], ?flags) =
+        static member InputText(label, buf: char[], ?flags: InputText) =
             let bytes = System.Text.Encoding.UTF8.GetBytes(new string(buf))
             let bufSize = System.Text.Encoding.UTF8.GetMaxByteCount(buf.Length) + 1
             let managed = Array.zeroCreate<byte> bufSize
             Buffer.BlockCopy(bytes, 0, managed, 0, min bytes.Length (bufSize - 1))
             let h = GCHandle.Alloc(managed, GCHandleType.Pinned)
             try
-                let r = ImGuiNative.IGN_InputText(label, h.AddrOfPinnedObject(), managed.Length, defaultArg flags 0)
+                let r = ImGuiNative.IGN_InputText(label, h.AddrOfPinnedObject(), managed.Length, defaultArg flags InputText.None)
                 if r then
                     let decoded = System.Text.Encoding.UTF8.GetString(managed).TrimEnd('\000')
                     let src = decoded.ToCharArray()
@@ -108,14 +110,14 @@ type public Gui =
                 r
             finally h.Free()
 
-        static member InputTextMultiline(label, buf: char[], ?width, ?height, ?flags) =
+        static member InputTextMultiline(label, buf: char[], ?width, ?height, ?flags: InputText) =
             let bytes = System.Text.Encoding.UTF8.GetBytes(new string(buf))
             let bufSize = System.Text.Encoding.UTF8.GetMaxByteCount(buf.Length) + 1
             let managed = Array.zeroCreate<byte> bufSize
             Buffer.BlockCopy(bytes, 0, managed, 0, min bytes.Length (bufSize - 1))
             let h = GCHandle.Alloc(managed, GCHandleType.Pinned)
             try
-                let r = ImGuiNative.IGN_InputTextMultiline(label, h.AddrOfPinnedObject(), managed.Length, defaultArg width 0.f, defaultArg height 0.f, defaultArg flags 0)
+                let r = ImGuiNative.IGN_InputTextMultiline(label, h.AddrOfPinnedObject(), managed.Length, defaultArg width 0.f, defaultArg height 0.f, defaultArg flags InputText.None)
                 if r then
                     let decoded = System.Text.Encoding.UTF8.GetString(managed).TrimEnd('\000')
                     let src = decoded.ToCharArray()
@@ -129,74 +131,74 @@ type public Gui =
         // Numerical Inputs, Sliders & Drags
         // ══════════════════════════════════════════════════════════════════════════════
         // Inputs
-        static member InputInt(label, v : int ref, ?step, ?stepFast, ?flags) =
+        static member InputInt(label, v : int ref, ?step, ?stepFast, ?flags: InputText) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_InputInt(label, &vv, defaultArg step 1, defaultArg stepFast 100, defaultArg flags 0)
+            let r = ImGuiNative.IGN_InputInt(label, &vv, defaultArg step 1, defaultArg stepFast 100, defaultArg flags InputText.None)
             v.Value <- vv
             r
-        static member InputFloat(label, v : float32 ref, ?step, ?stepFast, ?fmt, ?flags) =
+        static member InputFloat(label, v : float32 ref, ?step, ?stepFast, ?fmt, ?flags: InputText) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_InputFloat(label, &vv, defaultArg step 0f, defaultArg stepFast 0f, defaultArg fmt "%.3f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_InputFloat(label, &vv, defaultArg step 0f, defaultArg stepFast 0f, defaultArg fmt "%.3f", defaultArg flags InputText.None)
             v.Value <- vv
             r
-        static member InputDouble(label, v : double ref, ?step, ?stepFast, ?fmt, ?flags) =
+        static member InputDouble(label, v : double ref, ?step, ?stepFast, ?fmt, ?flags: InputText) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_InputDouble(label, &vv, defaultArg step 0.0, defaultArg stepFast 0.0, defaultArg fmt "%.6f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_InputDouble(label, &vv, defaultArg step 0.0, defaultArg stepFast 0.0, defaultArg fmt "%.6f", defaultArg flags InputText.None)
             v.Value <- vv
             r
 
         // Drags
-        static member DragInt(label, v : int ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+        static member DragInt(label, v : int ref, ?speed, ?min, ?max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_DragInt(label, &vv, defaultArg speed 1f, defaultArg min 0, defaultArg max 0, defaultArg fmt "%d", defaultArg flags 0)
+            let r = ImGuiNative.IGN_DragInt(label, &vv, defaultArg speed 1f, defaultArg min 0, defaultArg max 0, defaultArg fmt "%d", defaultArg flags Slider.None)
             v.Value <- vv
             r
-        static member DragFloat(label, v : float32 ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+        static member DragFloat(label, v : float32 ref, ?speed, ?min, ?max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_DragFloat(label, &vv, defaultArg speed 1f, defaultArg min 0f, defaultArg max 0f, defaultArg fmt "%.3f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_DragFloat(label, &vv, defaultArg speed 1f, defaultArg min 0f, defaultArg max 0f, defaultArg fmt "%.3f", defaultArg flags Slider.None)
             v.Value <- vv
             r
-        static member DragDouble(label, v : double ref, ?speed, ?min, ?max, ?fmt, ?flags) =
+        static member DragDouble(label, v : double ref, ?speed, ?min, ?max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_DragDouble(label, &vv, defaultArg speed 1.0f, defaultArg min 0.0, defaultArg max 0.0, defaultArg fmt "%.6f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_DragDouble(label, &vv, defaultArg speed 1.0f, defaultArg min 0.0, defaultArg max 0.0, defaultArg fmt "%.6f", defaultArg flags Slider.None)
             v.Value <- vv
             r
 
         // Sliders
-        static member SliderInt(label, v : int ref, min, max, ?fmt, ?flags) =
+        static member SliderInt(label, v : int ref, min, max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_SliderInt(label, &vv, min, max, defaultArg fmt "%d", defaultArg flags 0)
+            let r = ImGuiNative.IGN_SliderInt(label, &vv, min, max, defaultArg fmt "%d", defaultArg flags Slider.None)
             v.Value <- vv
             r
-        static member SliderFloat(label, v : float32 ref, min, max, ?fmt, ?flags) =
+        static member SliderFloat(label, v : float32 ref, min, max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_SliderFloat(label, &vv, min, max, defaultArg fmt "%.3f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_SliderFloat(label, &vv, min, max, defaultArg fmt "%.3f", defaultArg flags Slider.None)
             v.Value <- vv
             r
-        static member SliderDouble(label, v : double ref, min, max, ?fmt, ?flags) =
+        static member SliderDouble(label, v : double ref, min, max, ?fmt, ?flags: Slider) =
             let mutable vv = v.Value
-            let r = ImGuiNative.IGN_SliderDouble(label, &vv, min, max, defaultArg fmt "%.6f", defaultArg flags 0)
+            let r = ImGuiNative.IGN_SliderDouble(label, &vv, min, max, defaultArg fmt "%.6f", defaultArg flags Slider.None)
             v.Value <- vv
             r
 
         // Color Editing
-        static member ColorEdit4(label, col, ?flags) =
+        static member ColorEdit4(label, col, ?flags: ColorEdit) =
             let h = GCHandle.Alloc(col, GCHandleType.Pinned)
-            try ImGuiNative.IGN_ColorEdit4(label, h.AddrOfPinnedObject(), defaultArg flags 0)
+            try ImGuiNative.IGN_ColorEdit4(label, h.AddrOfPinnedObject(), defaultArg flags ColorEdit.None)
             finally h.Free()
 
         // ══════════════════════════════════════════════════════════════════════════════
         // Containers & Trees
         // ══════════════════════════════════════════════════════════════════════════════
         // Trees & Collapsing Headers
-        static member CollapsingHeader(label, ?flags) =
-            ImGuiNative.IGN_CollapsingHeader(label, defaultArg flags 0)
+        static member CollapsingHeader(label, ?flags: TreeNode) =
+            ImGuiNative.IGN_CollapsingHeader(label, defaultArg flags TreeNode.None)
         static member TreeNode(label) = ImGuiNative.IGN_TreeNode(label)
         static member TreePop()       = ImGuiNative.IGN_TreePop()
 
         // Combo Boxes
-        static member BeginCombo(label, preview, ?flags) =
-            ImGuiNative.IGN_BeginCombo(label, preview, defaultArg flags 0)
+        static member BeginCombo(label, preview, ?flags: Combo) =
+            ImGuiNative.IGN_BeginCombo(label, preview, defaultArg flags Combo.None)
         static member EndCombo() = ImGuiNative.IGN_EndCombo()
 
         // List Boxes
@@ -204,20 +206,20 @@ type public Gui =
         static member EndListBox() = ImGuiNative.IGN_EndListBox()
 
         // Tab Bars
-        static member BeginTabBar(strId, ?flags) = ImGuiNative.IGN_BeginTabBar(strId, defaultArg flags 0)
+        static member BeginTabBar(strId, ?flags: TabBar) = ImGuiNative.IGN_BeginTabBar(strId, defaultArg flags TabBar.None)
         static member EndTabBar() = ImGuiNative.IGN_EndTabBar()
-        static member BeginTabItem(label, ?pOpen, ?flags) =
-            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_BeginTabItem(label, ptr, defaultArg flags 0))
+        static member BeginTabItem(label, ?pOpen, ?flags: TabItem) =
+            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_BeginTabItem(label, ptr, defaultArg flags TabItem.None))
         static member EndTabItem() = ImGuiNative.IGN_EndTabItem()
 
         // Tables
-        static member BeginTable(id, cols, ?flags, ?ow, ?oh) =
-            ImGuiNative.IGN_BeginTable(id, cols, defaultArg flags 0, defaultArg ow 0f, defaultArg oh 0f)
+        static member BeginTable(id, cols, ?flags: Table, ?ow, ?oh) =
+            ImGuiNative.IGN_BeginTable(id, cols, defaultArg flags Table.None, defaultArg ow 0f, defaultArg oh 0f)
         static member EndTable() = ImGuiNative.IGN_EndTable()
-        static member TableSetupColumn(label, ?flags, ?init) =
-            ImGuiNative.IGN_TableSetupColumn(label, defaultArg flags 0, defaultArg init 0f)
-        static member TableNextRow(?rowFlags, ?minH) =
-            ImGuiNative.IGN_TableNextRow(defaultArg rowFlags 0, defaultArg minH 0f)
+        static member TableSetupColumn(label, ?flags: TableColumn, ?init) =
+            ImGuiNative.IGN_TableSetupColumn(label, defaultArg flags TableColumn.None, defaultArg init 0f)
+        static member TableNextRow(?rowFlags: TableRow, ?minH) =
+            ImGuiNative.IGN_TableNextRow(defaultArg rowFlags TableRow.None, defaultArg minH 0f)
         static member TableNextColumn() = ImGuiNative.IGN_TableNextColumn()
 
         // ══════════════════════════════════════════════════════════════════════════════
@@ -233,16 +235,16 @@ type public Gui =
             ImGuiNative.IGN_MenuItem(label, defaultArg shortcut Unchecked.defaultof<string>, defaultArg selected false, defaultArg enabled true)
 
         // Popups & Modals
-        static member OpenPopup(strId, ?flags) = ImGuiNative.IGN_OpenPopup(strId, defaultArg flags 0)
-        static member BeginPopup(strId, ?flags) = ImGuiNative.IGN_BeginPopup(strId, defaultArg flags 0)
-        static member BeginPopupModal(name, ?pOpen, ?flags) =
-            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_BeginPopupModal(name, ptr, defaultArg flags 0))
+        static member OpenPopup(strId, ?flags: Popup) = ImGuiNative.IGN_OpenPopup(strId, defaultArg flags Popup.None)
+        static member BeginPopup(strId, ?flags: Popup) = ImGuiNative.IGN_BeginPopup(strId, defaultArg flags Popup.None)
+        static member BeginPopupModal(name, ?pOpen, ?flags: Window) =
+            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_BeginPopupModal(name, ptr, defaultArg flags Window.None))
         static member EndPopup() = ImGuiNative.IGN_EndPopup()
         static member CloseCurrentPopup() = ImGuiNative.IGN_CloseCurrentPopup()
-        static member BeginPopupContextItem(?strId, ?flags) =
-            ImGuiNative.IGN_BeginPopupContextItem(defaultArg strId Unchecked.defaultof<string>, defaultArg flags 1)
-        static member BeginPopupContextWindow(?strId, ?flags) =
-            ImGuiNative.IGN_BeginPopupContextWindow(defaultArg strId Unchecked.defaultof<string>, defaultArg flags 1)
+        static member BeginPopupContextItem(?strId, ?flags: Popup) =
+            ImGuiNative.IGN_BeginPopupContextItem(defaultArg strId Unchecked.defaultof<string>, defaultArg flags Popup.MouseButtonRight)
+        static member BeginPopupContextWindow(?strId, ?flags: Popup) =
+            ImGuiNative.IGN_BeginPopupContextWindow(defaultArg strId Unchecked.defaultof<string>, defaultArg flags Popup.MouseButtonRight)
 
         // Tooltips
         static member BeginTooltip() = ImGuiNative.IGN_BeginTooltip()
@@ -254,21 +256,23 @@ type public Gui =
         // ══════════════════════════════════════════════════════════════════════════════
         // Style Configuration
         // ══════════════════════════════════════════════════════════════════════════════
-        static member PushStyleColor(idx, r, g, b, a) = ImGuiNative.IGN_PushStyleColor(idx, r, g, b, a)
+        // Style Configuration
+        // ══════════════════════════════════════════════════════════════════════════════
+        static member PushStyleColor(idx: Col, r, g, b, a) = ImGuiNative.IGN_PushStyleColor(idx, r, g, b, a)
         static member PopStyleColor(?count)           = ImGuiNative.IGN_PopStyleColor(defaultArg count 1)
-        static member PushStyleVar(idx, valFloat: float32) = ImGuiNative.IGN_PushStyleVar_Float(idx, valFloat)
-        static member PushStyleVar(idx, valVec2X: float32, valVec2Y: float32) = ImGuiNative.IGN_PushStyleVar_Vec2(idx, valVec2X, valVec2Y)
+        static member PushStyleVar(idx: StyleVar, valFloat: float32) = ImGuiNative.IGN_PushStyleVar_Float(idx, valFloat)
+        static member PushStyleVar(idx: StyleVar, valVec2X: float32, valVec2Y: float32) = ImGuiNative.IGN_PushStyleVar_Vec2(idx, valVec2X, valVec2Y)
         static member PopStyleVar(?count)             = ImGuiNative.IGN_PopStyleVar(defaultArg count 1)
 
         // ══════════════════════════════════════════════════════════════════════════════
         // Input Queries & State
         // ══════════════════════════════════════════════════════════════════════════════
-        static member IsItemHovered(?flags)           = ImGuiNative.IGN_IsItemHovered(defaultArg flags 0)
+        static member IsItemHovered(?flags: Hovered)           = ImGuiNative.IGN_IsItemHovered(defaultArg flags Hovered.None)
         static member IsItemActive()                  = ImGuiNative.IGN_IsItemActive()
-        static member IsItemClicked(?mouseButton)     = ImGuiNative.IGN_IsItemClicked(defaultArg mouseButton 0)
-        static member IsMouseClicked(button, ?repeat) = ImGuiNative.IGN_IsMouseClicked(button, defaultArg repeat false)
-        static member IsMouseDown(button)             = ImGuiNative.IGN_IsMouseDown(button)
-        static member IsMouseDoubleClicked(button)    = ImGuiNative.IGN_IsMouseDoubleClicked(button)
+        static member IsItemClicked(?mouseButton: MouseButton) = ImGuiNative.IGN_IsItemClicked(defaultArg mouseButton MouseButton.Left)
+        static member IsMouseClicked(button: MouseButton, ?repeat) = ImGuiNative.IGN_IsMouseClicked(button, defaultArg repeat false)
+        static member IsMouseDown(button: MouseButton)             = ImGuiNative.IGN_IsMouseDown(button)
+        static member IsMouseDoubleClicked(button: MouseButton)    = ImGuiNative.IGN_IsMouseDoubleClicked(button)
         static member GetMousePos() =
             let mutable x, y = 0.f, 0.f
             ImGuiNative.IGN_GetMousePos(&x, &y)
@@ -284,10 +288,10 @@ type public Gui =
         static member SetCursorScreenPos(x, y) = ImGuiNative.IGN_SetCursorScreenPos(x, y)
         static member DrawLine(p1_x, p1_y, p2_x, p2_y, col, ?thickness) =
             ImGuiNative.IGN_DrawList_AddLine(p1_x, p1_y, p2_x, p2_y, col, defaultArg thickness 1.f)
-        static member DrawRect(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags, ?thickness) =
-            ImGuiNative.IGN_DrawList_AddRect(p1_x, p1_y, p2_x, p2_y, col, defaultArg rounding 0.f, defaultArg flags 0, defaultArg thickness 1.f)
-        static member DrawRectFilled(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags) =
-            ImGuiNative.IGN_DrawList_AddRectFilled(p1_x, p1_y, p2_x, p2_y, col, defaultArg rounding 0.f, defaultArg flags 0)
+        static member DrawRect(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags: Draw, ?thickness) =
+            ImGuiNative.IGN_DrawList_AddRect(p1_x, p1_y, p2_x, p2_y, col, defaultArg rounding 0.f, defaultArg flags Draw.None, defaultArg thickness 1.f)
+        static member DrawRectFilled(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags: Draw) =
+            ImGuiNative.IGN_DrawList_AddRectFilled(p1_x, p1_y, p2_x, p2_y, col, defaultArg rounding 0.f, defaultArg flags Draw.None)
         static member DrawRectFilledMultiColor(p1_x, p1_y, p2_x, p2_y, colUprLeft, colUprRight, colBotRight, colBotLeft) =
             ImGuiNative.IGN_DrawList_AddRectFilledMultiColor(p1_x, p1_y, p2_x, p2_y, colUprLeft, colUprRight, colBotRight, colBotLeft)
         static member DrawCircle(centerX, centerY, radius, col, ?numSegments, ?thickness) =
@@ -298,9 +302,9 @@ type public Gui =
             ImGuiNative.IGN_DrawList_AddTriangleFilled(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col)
         static member DrawText(posX, posY, col, text) =
             ImGuiNative.IGN_DrawList_AddText(posX, posY, col, text)
-        static member DrawPolyline(pointsX: float32[], pointsY: float32[], col, ?flags, ?thickness) =
+        static member DrawPolyline(pointsX: float32[], pointsY: float32[], col, ?flags: Draw, ?thickness) =
             let count = min pointsX.Length pointsY.Length
-            ImGuiNative.IGN_DrawList_AddPolyline(pointsX, pointsY, count, col, defaultArg flags 0, defaultArg thickness 1.f)
+            ImGuiNative.IGN_DrawList_AddPolyline(pointsX, pointsY, count, col, defaultArg flags Draw.None, defaultArg thickness 1.f)
         static member DrawConvexPolyFilled(pointsX: float32[], pointsY: float32[], col) =
             let count = min pointsX.Length pointsY.Length
             ImGuiNative.IGN_DrawList_AddConvexPolyFilled(pointsX, pointsY, count, col)
@@ -314,23 +318,23 @@ type public Gui =
         // ImPlot 2D (Data Visualization)
         // ══════════════════════════════════════════════════════════════════════════════
         // Lifecycle & Setup
-        static member BeginPlot(titleId, ?w, ?h, ?flags) =
-            ImGuiNative.IGN_Plot_BeginPlot(titleId, defaultArg w -1f, defaultArg h -1f, defaultArg flags 0)
+        static member BeginPlot(titleId, ?w, ?h, ?flags: Plot) =
+            ImGuiNative.IGN_Plot_BeginPlot(titleId, defaultArg w -1f, defaultArg h -1f, defaultArg flags Plot.None)
         static member EndPlot() = ImGuiNative.IGN_Plot_EndPlot()
-        static member SetupAxes(xLabel, yLabel, ?xFlags, ?yFlags) =
-            ImGuiNative.IGN_Plot_SetupAxes(xLabel, yLabel, defaultArg xFlags 0, defaultArg yFlags 0)
-        static member SetupAxisLimits(axis, v_min, v_max, ?cond) =
-            ImGuiNative.IGN_Plot_SetupAxisLimits(axis, v_min, v_max, defaultArg cond 0)
-        static member SetNextAxesLimits(x_min, x_max, y_min, y_max, ?cond) =
-            ImGuiNative.IGN_Plot_SetNextAxesLimits(x_min, x_max, y_min, y_max, defaultArg cond 0)
-        static member SetupLegend(location, ?flags) =
-            ImGuiNative.IGN_Plot_SetupLegend(location, defaultArg flags 0)
-        static member SetupAxisScale(axis, scale) =
+        static member SetupAxes(xLabel, yLabel, ?xFlags: Flags.PlotAxis, ?yFlags: Flags.PlotAxis) =
+            ImGuiNative.IGN_Plot_SetupAxes(xLabel, yLabel, defaultArg xFlags Flags.PlotAxis.None, defaultArg yFlags Flags.PlotAxis.None)
+        static member SetupAxisLimits(axis: PlotAxis, v_min, v_max, ?cond: Cond) =
+            ImGuiNative.IGN_Plot_SetupAxisLimits(axis, v_min, v_max, defaultArg cond Cond.None)
+        static member SetNextAxesLimits(x_min, x_max, y_min, y_max, ?cond: Cond) =
+            ImGuiNative.IGN_Plot_SetNextAxesLimits(x_min, x_max, y_min, y_max, defaultArg cond Cond.None)
+        static member SetupLegend(location: PlotLocation, ?flags: PlotLegend) =
+            ImGuiNative.IGN_Plot_SetupLegend(location, defaultArg flags PlotLegend.None)
+        static member SetupAxisScale(axis: PlotAxis, scale: PlotScale) =
             ImGuiNative.IGN_Plot_SetupAxisScale(axis, scale)
-        static member SetupAxisFormat(axis, fmt) =
+        static member SetupAxisFormat(axis: PlotAxis, fmt) =
             ImGuiNative.IGN_Plot_SetupAxisFormat(axis, fmt)
         static member ShowPlotDemoWindow(?pOpen) =
-            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_Plot_ShowDemoWindow(ptr))
+            BoolPtr.withOptRef pOpen ImGuiNative.IGN_Plot_ShowDemoWindow
 
         // PlotLine
         static member PlotLine(label, values: float32[], ?xScale, ?x0) =
@@ -452,7 +456,7 @@ type public Gui =
             ImGuiNative.IGN_Plot_PlotPolygon_DoublePtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<double>)
 
         // PlotBarGroups
-        static member PlotBarGroups(labels: string[], values: float32[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
+        static member PlotBarGroups(labels: string[], values: float32[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: PlotBarGroups) =
             let handles = Array.zeroCreate<GCHandle> labels.Length
             let pointers    = Array.zeroCreate<nativeint> labels.Length
             try
@@ -462,11 +466,11 @@ type public Gui =
                     pointers[i] <- handles[i].AddrOfPinnedObject()
                 let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotBarGroups_FloatPtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                    ImGuiNative.IGN_Plot_PlotBarGroups_FloatPtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags PlotBarGroups.None)
                 finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
-        static member PlotBarGroups(labels: string[], values: double[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
+        static member PlotBarGroups(labels: string[], values: double[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: PlotBarGroups) =
             let handles = Array.zeroCreate<GCHandle> labels.Length
             let pointers    = Array.zeroCreate<nativeint> labels.Length
             try
@@ -476,7 +480,7 @@ type public Gui =
                     pointers[i] <- handles[i].AddrOfPinnedObject()
                 let pointersHandle = GCHandle.Alloc(pointers, GCHandleType.Pinned)
                 try
-                    ImGuiNative.IGN_Plot_PlotBarGroups_DoublePtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                    ImGuiNative.IGN_Plot_PlotBarGroups_DoublePtr(pointersHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags PlotBarGroups.None)
                 finally pointersHandle.Free()
             finally
                 for h in handles do if h.IsAllocated then h.Free()
@@ -509,13 +513,13 @@ type public Gui =
         // ImPlot 3D (3D Data Visualization)
         // ══════════════════════════════════════════════════════════════════════════════
         // Lifecycle & Setup
-        static member BeginPlot3D(titleId, ?w, ?h, ?flags) =
-            ImGuiNative.IGN_Plot3D_BeginPlot(titleId, defaultArg w -1f, defaultArg h -1f, defaultArg flags 0)
+        static member BeginPlot3D(titleId, ?w, ?h, ?flags: Plot3D) =
+            ImGuiNative.IGN_Plot3D_BeginPlot(titleId, defaultArg w -1f, defaultArg h -1f, defaultArg flags Plot3D.None)
         static member EndPlot3D() = ImGuiNative.IGN_Plot3D_EndPlot()
-        static member SetupAxes3D(xLabel, yLabel, zLabel, ?xFlags, ?yFlags, ?zFlags) =
-            ImGuiNative.IGN_Plot3D_SetupAxes(xLabel, yLabel, zLabel, defaultArg xFlags 0, defaultArg yFlags 0, defaultArg zFlags 0)
+        static member SetupAxes3D(xLabel, yLabel, zLabel, ?xFlags: Plot3DAxis, ?yFlags: Plot3DAxis, ?zFlags: Plot3DAxis) =
+            ImGuiNative.IGN_Plot3D_SetupAxes(xLabel, yLabel, zLabel, defaultArg xFlags Plot3DAxis.None, defaultArg yFlags Plot3DAxis.None, defaultArg zFlags Plot3DAxis.None)
         static member ShowPlot3DDemoWindow(?pOpen) =
-            BoolPtr.withOptRef pOpen (fun ptr -> ImGuiNative.IGN_Plot3D_ShowDemoWindow(ptr))
+            BoolPtr.withOptRef pOpen ImGuiNative.IGN_Plot3D_ShowDemoWindow
 
         // PlotLine3D
         static member PlotLine3D(label, xs: float32[], ys: float32[], zs: float32[]) =

@@ -1,6 +1,8 @@
 namespace ImGuiFSharp
 
 open System.Runtime.InteropServices
+open ImGuiFSharp.Flags
+open ImGuiFSharp.Enums
 
 // ══════════════════════════════════════════════════════════════════════════════
 // A. PInvoke declarations
@@ -77,7 +79,7 @@ module internal ImGuiNative =
     // Widgets
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Begin(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string name, nativeint pOpen, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string name, nativeint pOpen, Window flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_End()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -88,32 +90,32 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InputText(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
-        nativeint buf, int bufSize, int flags)
+        nativeint buf, int bufSize, InputText flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InputFloat(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
         float32& v, float32 step, float32 stepFast,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, InputText flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InputInt(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
-        int& v, int step, int stepFast, int flags)
+        int& v, int step, int stepFast, InputText flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_SliderFloat(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
         float32& v, float32 min, float32 max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, Slider flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_SliderInt(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
         int& v, int min, int max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, Slider flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Checkbox(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint v)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_CollapsingHeader(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, TreeNode flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_TreeNode(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label)
@@ -122,27 +124,27 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginTable(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string id,
-        int cols, int flags, float32 outerW, float32 outerH)
+        int cols, Table flags, float32 outerW, float32 outerH)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndTable()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_TableSetupColumn(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, int flags, float32 init)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, TableColumn flags, float32 init)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_TableNextRow(int rowFlags, float32 minH)
+    extern void IGN_TableNextRow(TableRow rowFlags, float32 minH)
     // Returns true if the column is visible (clipped columns return false).
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_TableNextColumn()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginCombo(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string preview, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string preview, Combo flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndCombo()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Selectable(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
-        [<MarshalAs(UnmanagedType.I1)>] bool selected, int flags, float32 w, float32 h)
+        [<MarshalAs(UnmanagedType.I1)>] bool selected, Selectable flags, float32 w, float32 h)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginMenuBar()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -173,17 +175,17 @@ module internal ImGuiNative =
     extern void IGN_PopID()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_ColorEdit4(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint col, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint col, ColorEdit flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_DragFloat(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
         float32& v, float32 speed, float32 min, float32 max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, Slider flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_DragInt(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
         int& v, float32 speed, int min, int max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt, Slider flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_RadioButton(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
@@ -198,32 +200,28 @@ module internal ImGuiNative =
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string id,
         uint32 texId, float32 w, float32 h)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_SetNextWindowPos(float32 x, float32 y, int cond)
+    extern void IGN_SetNextWindowPos(float32 x, float32 y, Cond cond)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_SetNextWindowSize(float32 w, float32 h, int cond)
+    extern void IGN_SetNextWindowSize(float32 w, float32 h, Cond cond)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_SetNextWindowBgAlpha(float32 alpha)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_ShowDemoWindow(nativeint pOpen)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern uint32 IGN_DockSpace(uint32 id, float32 w, float32 h, int flags)
+    extern uint32 IGN_DockSpace(uint32 id, float32 w, float32 h, DockNode flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_DockSpaceOverViewport(int flags)
-
-    // ImPlot
-    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_CreateContext()
-    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_DestroyContext()
-    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Plot_BeginPlot(
+    extern void IGN_DockSpaceOverViewport(DockNode flags)
+     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Plot_BeginPlot(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string titleId,
-        float32 w, float32 h, int flags)
+        float32 w, float32 h, Plot flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_EndPlot()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_SetupAxes(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string xLabel,
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string yLabel,
-        int xFlags, int yFlags)
+        Flags.PlotAxis xFlags, Flags.PlotAxis yFlags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_PlotLine_FloatPtrInt(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
@@ -244,7 +242,7 @@ module internal ImGuiNative =
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_ShowDemoWindow(nativeint pOpen)
-
+ 
     // ImPlot3D
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_CreateContext()
@@ -253,7 +251,7 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_Plot3D_BeginPlot(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string titleId,
-        float32 w, float32 h, int flags)
+        float32 w, float32 h, Plot3D flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_EndPlot()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -261,7 +259,7 @@ module internal ImGuiNative =
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string xLabel,
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string yLabel,
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string zLabel,
-        int xFlags, int yFlags, int zFlags)
+        Plot3DAxis xFlags, Plot3DAxis yFlags, Plot3DAxis zFlags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_PlotLine(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
@@ -277,21 +275,21 @@ module internal ImGuiNative =
         int xCount, int yCount, int offset, int rowStride)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_ShowDemoWindow(nativeint pOpen)
-
+ 
     // Double-precision widgets
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InputDouble(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double& v, double step, double step_fast,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, InputText flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_DragDouble(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double& v, float32 speed, double v_min, double v_max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, Slider flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_SliderDouble(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double& v, double v_min, double v_max,
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, int flags)
-
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string format, Slider flags)
+ 
     // Text variants
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_TextColored(float32 r, float32 g, float32 b, float32 a, [<MarshalAs(UnmanagedType.LPUTF8Str)>] string text)
@@ -301,12 +299,12 @@ module internal ImGuiNative =
     extern void IGN_TextWrapped([<MarshalAs(UnmanagedType.LPUTF8Str)>] string text)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InputTextMultiline(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint buf, int bufSize, float32 w, float32 h, int flags)
-
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint buf, int bufSize, float32 w, float32 h, InputText flags)
+ 
     // Layout
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginChild(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, float32 w, float32 h, [<MarshalAs(UnmanagedType.I1)>] bool border, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, float32 w, float32 h, [<MarshalAs(UnmanagedType.I1)>] bool border, Child flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndChild()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -322,40 +320,37 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_GetContentRegionAvail(float32& x, float32& y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_GetWindowSize(float32& x, float32& y)
-    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_GetWindowPos(float32& x, float32& y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_SetNextWindowBgAlpha(float32 alpha)
-
-    // Style
+    extern void IGN_GetWindowSize(float32& x, float32& y)
+        // Style
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_PushStyleColor(int idx, float32 r, float32 g, float32 b, float32 a)
+    extern void IGN_PushStyleColor(Col idx, float32 r, float32 g, float32 b, float32 a)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_PopStyleColor(int count)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_PushStyleVar_Float(int idx, float32 value)
+    extern void IGN_PushStyleVar_Float(StyleVar idx, float32 value)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_PushStyleVar_Vec2(int idx, float32 x, float32 y)
+    extern void IGN_PushStyleVar_Vec2(StyleVar idx, float32 x, float32 y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_PopStyleVar(int count)
-
+ 
     // Queries
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsItemHovered(int flags)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsItemHovered(Hovered flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsItemActive()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsItemClicked(int mouse_button)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsItemClicked(MouseButton mouse_button)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseClicked(int button, [<MarshalAs(UnmanagedType.I1)>] bool repeat)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseClicked(MouseButton button, [<MarshalAs(UnmanagedType.I1)>] bool repeat)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseDown(int button)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseDown(MouseButton button)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseDoubleClicked(int button)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsMouseDoubleClicked(MouseButton button)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_GetMousePos(float32& x, float32& y)
-
+ 
     // Tooltips, popups, modals
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_BeginTooltip()
@@ -368,36 +363,36 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_SetItemTooltip([<MarshalAs(UnmanagedType.LPUTF8Str)>] string text)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_OpenPopup([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, int flags)
+    extern void IGN_OpenPopup([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, Popup flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopup([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, int flags)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopup([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, Popup flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopupModal(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string name, nativeint p_open, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string name, nativeint p_open, Window flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndPopup()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_CloseCurrentPopup()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopupContextItem([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, int flags)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopupContextItem([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, Popup flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopupContextWindow([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, int flags)
-
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginPopupContextWindow([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, Popup flags)
+ 
     // Tab Bars & List Boxes
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginTabBar([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, int flags)
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginTabBar([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, TabBar flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndTabBar()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginTabItem(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint p_open, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint p_open, TabItem flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndTabItem()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginListBox([<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32 w, float32 h)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_EndListBox()
-
+ 
     // Canvas drawing
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_GetCursorScreenPos(float32& x, float32& y)
@@ -405,13 +400,13 @@ module internal ImGuiNative =
     extern void IGN_SetCursorScreenPos(float32 x, float32 y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_InvisibleButton(
-        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, float32 w, float32 h, int flags)
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id, float32 w, float32 h, Button flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_DrawList_AddLine(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col, float32 thickness)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_DrawList_AddRect(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col, float32 rounding, int flags, float32 thickness)
+    extern void IGN_DrawList_AddRect(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col, float32 rounding, Draw flags, float32 thickness)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_DrawList_AddRectFilled(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col, float32 rounding, int flags)
+    extern void IGN_DrawList_AddRectFilled(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col, float32 rounding, Draw flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_DrawList_AddRectFilledMultiColor(float32 p1_x, float32 p1_y, float32 p2_x, float32 p2_y, uint32 col_upr_left, uint32 col_upr_right, uint32 col_bot_right, uint32 col_bot_left)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -423,7 +418,7 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_DrawList_AddText(float32 pos_x, float32 pos_y, uint32 col, [<MarshalAs(UnmanagedType.LPUTF8Str)>] string text_begin)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_DrawList_AddPolyline(float32[] points_x, float32[] points_y, int num_points, uint32 col, int flags, float32 thickness)
+    extern void IGN_DrawList_AddPolyline(float32[] points_x, float32[] points_y, int num_points, uint32 col, Draw flags, float32 thickness)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_DrawList_AddConvexPolyFilled(float32[] points_x, float32[] points_y, int num_points, uint32 col)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -432,18 +427,18 @@ module internal ImGuiNative =
     extern void IGN_DrawList_PushClipRect(float32 clip_rect_min_x, float32 clip_rect_min_y, float32 clip_rect_max_x, float32 clip_rect_max_y, [<MarshalAs(UnmanagedType.I1)>] bool intersect_with_current_clip_rect)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_DrawList_PopClipRect()
-
+ 
     // ImPlot double-precision
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_SetupAxisLimits(int axis, double v_min, double v_max, int cond)
+    extern void IGN_Plot_SetupAxisLimits(PlotAxis axis, double v_min, double v_max, Cond cond)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_SetNextAxesLimits(double x_min, double x_max, double y_min, double y_max, int cond)
+    extern void IGN_Plot_SetNextAxesLimits(double x_min, double x_max, double y_min, double y_max, Cond cond)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_SetupLegend(int location, int flags)
+    extern void IGN_Plot_SetupLegend(PlotLocation location, PlotLegend flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_SetupAxisScale(int axis, int scale)
+    extern void IGN_Plot_SetupAxisScale(PlotAxis axis, PlotScale scale)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Plot_SetupAxisFormat(int axis, [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt)
+    extern void IGN_Plot_SetupAxisFormat(PlotAxis axis, [<MarshalAs(UnmanagedType.LPUTF8Str)>] string fmt)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_PlotLine_DoublePtrInt(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] values, int count, double xscale, double x0, int offset, int stride)
@@ -525,10 +520,10 @@ module internal ImGuiNative =
     // ImPlot — Bar Groups
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_PlotBarGroups_FloatPtr(
-        nativeint label_ids, float32[] values, int item_count, int group_count, double group_size, double shift, int flags)
+        nativeint label_ids, float32[] values, int item_count, int group_count, double group_size, double shift, PlotBarGroups flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot_PlotBarGroups_DoublePtr(
-        nativeint label_ids, double[] values, int item_count, int group_count, double group_size, double shift, int flags)
+        nativeint label_ids, double[] values, int item_count, int group_count, double group_size, double shift, PlotBarGroups flags)
 
     // ImPlot — Stems
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]

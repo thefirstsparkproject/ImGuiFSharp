@@ -5,3 +5,5 @@ cpp/build/
 .godot/
 *.user
 .idea/
+
+.fake

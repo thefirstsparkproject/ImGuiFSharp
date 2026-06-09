@@ -1,30 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>ImGuiFSharp</RootNamespace>
-    <AssemblyName>ImGuiFSharp</AssemblyName>
-    <Nullable>enable</Nullable>
-    <Optimize>true</Optimize>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>1.2.0</Version>
-    <PackageId>ImGuiFSharp</PackageId>
-    <Authors>thefirstsparkproject</Authors>
-    <RepositoryUrl>https://github.com/thefirstsparkproject/ImGuiFSharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
-  <ItemGroup>
-    <!-- Compile order matters in F# -->
-    <Compile Include="internal/WindowInternal.fs" />
-    <Compile Include="internal/ImGuiInternal.fs" />
-    <Compile Include="internal/NodeEditorInternal.fs" />
-    <Compile Include="Window.fs" />
-    <Compile Include="Gui.fs" />
-    <Compile Include="NodeEditor.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="runtimes/win-x64/native/ImGuiNative.dll" Pack="true" PackagePath="runtimes/win-x64/native/" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="runtimes/linux-x64/native/libImGuiNative.so" Pack="true" PackagePath="runtimes/linux-x64/native/" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="runtimes/osx-x64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="runtimes/osx-arm64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-arm64/native/" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>ImGuiFSharp</RootNamespace>
+        <AssemblyName>ImGuiFSharp</AssemblyName>
+        <Nullable>enable</Nullable>
+        <Optimize>true</Optimize>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <Version>1.3.0</Version>
+        <PackageId>ImGuiFSharp</PackageId>
+        <Authors>thefirstsparkproject</Authors>
+        <RepositoryUrl>https://github.com/thefirstsparkproject/ImGuiFSharp</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- Compile order matters in F# -->
+        <Compile Include="Flags.fs"/>
+        <Compile Include="Enums.fs"/>
+        <Compile Include="internal/WindowInternal.fs"/>
+        <Compile Include="internal/ImGuiInternal.fs"/>
+        <Compile Include="internal/NodeEditorInternal.fs"/>
+        <Compile Include="Window.fs"/>
+        <Compile Include="Gui.fs"/>
+        <Compile Include="NodeEditor.fs"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="runtimes/win-x64/native/ImGuiNative.dll" Pack="true" PackagePath="runtimes/win-x64/native/" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="runtimes/linux-x64/native/libImGuiNative.so" Pack="true" PackagePath="runtimes/linux-x64/native/" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="runtimes/osx-x64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="runtimes/osx-arm64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-arm64/native/" CopyToOutputDirectory="PreserveNewest"/>
+        <Compile Include="Builder.fs"/>
+        <Compile Include="BuilderExample.fs"/>
+
+    </ItemGroup>
 </Project>
