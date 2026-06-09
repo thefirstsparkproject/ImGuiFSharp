@@ -6,7 +6,7 @@ open System.Runtime.InteropServices
 // ══════════════════════════════════════════════════════════════════════════════
 // A. PInvoke declarations
 // ══════════════════════════════════════════════════════════════════════════════
-module public ImGuiNative =
+module internal ImGuiNative =
     [<Literal>]
     let LibName = "ImGuiNative"
 
@@ -131,8 +131,9 @@ module public ImGuiNative =
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, int flags, float32 init)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_TableNextRow(int rowFlags, float32 minH)
+    // Returns true if the column is visible (clipped columns return false).
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_TableNextColumn()
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_TableNextColumn()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_BeginCombo(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label,
@@ -490,6 +491,119 @@ module public ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_PlotSurface_Double(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, double[] zs, int xCount, int yCount, int offset, int rowStride)
+
+    // ImPlot — float variants for already-double-only plots
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotShaded_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys1, float32[] ys2, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotStairs_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotErrorBars_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, float32[] err, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotPieChart_Float(
+        nativeint label_ids, float32[] values, int count, double x, double y, double radius,
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label_fmt, double angle0)
+
+    // ImPlot — Bubbles
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotBubbles_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, float32[] szs, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotBubbles_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, double[] szs, int count, int offset, int stride)
+
+    // ImPlot — Polygon
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotPolygon_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotPolygon_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, int count, int offset, int stride)
+
+    // ImPlot — Bar Groups
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotBarGroups_FloatPtr(
+        nativeint label_ids, float32[] values, int item_count, int group_count, double group_size, double shift, int flags)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotBarGroups_DoublePtr(
+        nativeint label_ids, double[] values, int item_count, int group_count, double group_size, double shift, int flags)
+
+    // ImPlot — Stems
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotStems_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, int count, double ref_, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotStems_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, int count, double ref_, int offset, int stride)
+
+    // ImPlot — Inf Lines
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotInfLines_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] values, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotInfLines_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] values, int count, int offset, int stride)
+
+    // ImPlot — Histogram
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern double IGN_Plot_PlotHistogram_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] values, int count, int bins, double bar_scale, double range_min, double range_max, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern double IGN_Plot_PlotHistogram_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] values, int count, int bins, double bar_scale, double range_min, double range_max, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern double IGN_Plot_PlotHistogram2D_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, int count, int x_bins, int y_bins, double xmin, double xmax, double ymin, double ymax, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern double IGN_Plot_PlotHistogram2D_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, int count, int x_bins, int y_bins, double xmin, double xmax, double ymin, double ymax, int offset, int stride)
+
+    // ImPlot — Digital
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotDigital_FloatPtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotDigital_DoublePtr(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, int count, int offset, int stride)
+
+    // ImPlot — Text & Dummy
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotText(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string text, double x, double y, float32 pix_offset_x, float32 pix_offset_y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot_PlotDummy([<MarshalAs(UnmanagedType.LPUTF8Str)>] string label_id)
+
+    // ImPlot3D — Triangle & Quad
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotTriangle(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, float32[] zs, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotTriangle_Double(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, double[] zs, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotQuad(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, float32[] zs, int count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotQuad_Double(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, double[] zs, int count, int offset, int stride)
+
+    // ImPlot3D — Mesh
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotMesh(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, float32[] xs, float32[] ys, float32[] zs, uint32[] idxs, int vtx_count, int idx_count, int offset, int stride)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotMesh_Double(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, double[] xs, double[] ys, double[] zs, uint32[] idxs, int vtx_count, int idx_count, int offset, int stride)
+
+    // ImPlot3D — Text & Dummy
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotText(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string text, double x, double y, double z, double angle, float32 pix_offset_x, float32 pix_offset_y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_Plot3D_PlotDummy([<MarshalAs(UnmanagedType.LPUTF8Str)>] string label_id)
 
 // Helper: pin a bool ref and call a native function that may modify it
 module internal BoolPtr =

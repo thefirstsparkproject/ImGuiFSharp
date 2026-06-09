@@ -15,7 +15,7 @@ type IGN_FocusCallback = delegate of window: nativeint * [<MarshalAs(UnmanagedTy
 [<UnmanagedFunctionPointer(CallingConvention.Winapi)>]
 type IGN_CloseCallback = delegate of window: nativeint -> [<MarshalAs(UnmanagedType.I1)>] bool
 
-module public WindowInternal =
+module internal WindowInternal =
     [<Literal>]
     let LibName = "ImGuiNative"
 

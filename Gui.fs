@@ -17,8 +17,9 @@ type public Gui = class
 
         static member InputText(label, buf: char[], ?flags) =
             let bytes = System.Text.Encoding.UTF8.GetBytes(new string(buf))
-            let managed = Array.zeroCreate<byte> (bytes.Length + 1)
-            Buffer.BlockCopy(bytes, 0, managed, 0, bytes.Length)
+            let bufSize = System.Text.Encoding.UTF8.GetMaxByteCount(buf.Length) + 1
+            let managed = Array.zeroCreate<byte> bufSize
+            Buffer.BlockCopy(bytes, 0, managed, 0, min bytes.Length (bufSize - 1))
             let h = GCHandle.Alloc(managed, GCHandleType.Pinned)
             try
                 let r = ImGuiNative.IGN_InputText(label, h.AddrOfPinnedObject(), managed.Length, defaultArg flags 0)
@@ -74,6 +75,7 @@ type public Gui = class
             ImGuiNative.IGN_TableSetupColumn(label, defaultArg flags 0, defaultArg init 0f)
         static member TableNextRow(?rowFlags, ?minH) =
             ImGuiNative.IGN_TableNextRow(defaultArg rowFlags 0, defaultArg minH 0f)
+        // Returns true if the column is visible; skip rendering its content when false.
         static member TableNextColumn() = ImGuiNative.IGN_TableNextColumn()
 
         static member BeginMenuBar() = ImGuiNative.IGN_BeginMenuBar()
@@ -132,8 +134,9 @@ type public Gui = class
         static member TextWrapped(text)            = ImGuiNative.IGN_TextWrapped(text)
         static member InputTextMultiline(label, buf: char[], ?width, ?height, ?flags) =
             let bytes = System.Text.Encoding.UTF8.GetBytes(new string(buf))
-            let managed = Array.zeroCreate<byte> (bytes.Length + 1)
-            Buffer.BlockCopy(bytes, 0, managed, 0, bytes.Length)
+            let bufSize = System.Text.Encoding.UTF8.GetMaxByteCount(buf.Length) + 1
+            let managed = Array.zeroCreate<byte> bufSize
+            Buffer.BlockCopy(bytes, 0, managed, 0, min bytes.Length (bufSize - 1))
             let h = GCHandle.Alloc(managed, GCHandleType.Pinned)
             try
                 let r = ImGuiNative.IGN_InputTextMultiline(label, h.AddrOfPinnedObject(), managed.Length, defaultArg width 0.f, defaultArg height 0.f, defaultArg flags 0)
@@ -352,6 +355,139 @@ type public Gui = class
             ImGuiNative.IGN_Plot3D_PlotScatter_Double(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<double>)
         static member PlotSurface3D(label: string, xs: double[], ys: double[], zs: double[], xCount, yCount) =
             ImGuiNative.IGN_Plot3D_PlotSurface_Double(label, xs, ys, zs, xCount, yCount, 0, xCount * sizeof<double>)
+
+        // ImPlot — float overloads for already-double-only plots
+        static member PlotShaded(label, xs: float32[], ys1: float32[], ys2: float32[]) =
+            ImGuiNative.IGN_Plot_PlotShaded_FloatPtr(label, xs, ys1, ys2, min xs.Length (min ys1.Length ys2.Length), 0, sizeof<float32>)
+        static member PlotStairs(label, xs: float32[], ys: float32[]) =
+            ImGuiNative.IGN_Plot_PlotStairs_FloatPtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<float32>)
+        static member PlotErrorBars(label, xs: float32[], ys: float32[], err: float32[]) =
+            ImGuiNative.IGN_Plot_PlotErrorBars_FloatPtr(label, xs, ys, err, min xs.Length (min ys.Length err.Length), 0, sizeof<float32>)
+
+        // ImPlot — PieChart float overload
+        static member PlotPieChart(labels: string[], values: float32[], x: double, y: double, radius: double, ?labelFmt: string, ?angle0: double) =
+            let count = min labels.Length values.Length
+            let handles = Array.zeroCreate<GCHandle> count
+            let ptrs    = Array.zeroCreate<nativeint> count
+            try
+                for i in 0 .. count - 1 do
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
+                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
+                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                try
+                    ImGuiNative.IGN_Plot_PlotPieChart_Float(ptrsHandle.AddrOfPinnedObject(), values, count, x, y, radius, defaultArg labelFmt "%p", defaultArg angle0 90.0)
+                finally ptrsHandle.Free()
+            finally
+                for h in handles do if h.IsAllocated then h.Free()
+
+        // ImPlot — Bubbles
+        static member PlotBubbles(label, xs: float32[], ys: float32[], szs: float32[]) =
+            ImGuiNative.IGN_Plot_PlotBubbles_FloatPtr(label, xs, ys, szs, min xs.Length (min ys.Length szs.Length), 0, sizeof<float32>)
+        static member PlotBubbles(label: string, xs: double[], ys: double[], szs: double[]) =
+            ImGuiNative.IGN_Plot_PlotBubbles_DoublePtr(label, xs, ys, szs, min xs.Length (min ys.Length szs.Length), 0, sizeof<double>)
+
+        // ImPlot — Polygon
+        static member PlotPolygon(label, xs: float32[], ys: float32[]) =
+            ImGuiNative.IGN_Plot_PlotPolygon_FloatPtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<float32>)
+        static member PlotPolygon(label: string, xs: double[], ys: double[]) =
+            ImGuiNative.IGN_Plot_PlotPolygon_DoublePtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<double>)
+
+        // ImPlot — Bar Groups (same label-pinning pattern as PlotPieChart)
+        static member PlotBarGroups(labels: string[], values: float32[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
+            let count = min labels.Length (values.Length / (max 1 groupCount))
+            let handles = Array.zeroCreate<GCHandle> labels.Length
+            let ptrs    = Array.zeroCreate<nativeint> labels.Length
+            try
+                for i in 0 .. labels.Length - 1 do
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
+                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
+                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                try
+                    ImGuiNative.IGN_Plot_PlotBarGroups_FloatPtr(ptrsHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                finally ptrsHandle.Free()
+            finally
+                for h in handles do if h.IsAllocated then h.Free()
+
+        static member PlotBarGroups(labels: string[], values: double[], groupCount: int, ?groupSize: double, ?shift: double, ?flags: int) =
+            let handles = Array.zeroCreate<GCHandle> labels.Length
+            let ptrs    = Array.zeroCreate<nativeint> labels.Length
+            try
+                for i in 0 .. labels.Length - 1 do
+                    let bytes = System.Text.Encoding.UTF8.GetBytes(labels.[i] + "\0")
+                    handles.[i] <- GCHandle.Alloc(bytes, GCHandleType.Pinned)
+                    ptrs.[i] <- handles.[i].AddrOfPinnedObject()
+                let ptrsHandle = GCHandle.Alloc(ptrs, GCHandleType.Pinned)
+                try
+                    ImGuiNative.IGN_Plot_PlotBarGroups_DoublePtr(ptrsHandle.AddrOfPinnedObject(), values, labels.Length, groupCount, defaultArg groupSize 0.67, defaultArg shift 0.0, defaultArg flags 0)
+                finally ptrsHandle.Free()
+            finally
+                for h in handles do if h.IsAllocated then h.Free()
+
+        // ImPlot — Stems
+        static member PlotStems(label, xs: float32[], ys: float32[], ?ref_: double) =
+            ImGuiNative.IGN_Plot_PlotStems_FloatPtr(label, xs, ys, min xs.Length ys.Length, defaultArg ref_ 0.0, 0, sizeof<float32>)
+        static member PlotStems(label: string, xs: double[], ys: double[], ?ref_: double) =
+            ImGuiNative.IGN_Plot_PlotStems_DoublePtr(label, xs, ys, min xs.Length ys.Length, defaultArg ref_ 0.0, 0, sizeof<double>)
+
+        // ImPlot — Inf Lines
+        static member PlotInfLines(label, values: float32[]) =
+            ImGuiNative.IGN_Plot_PlotInfLines_FloatPtr(label, values, values.Length, 0, sizeof<float32>)
+        static member PlotInfLines(label: string, values: double[]) =
+            ImGuiNative.IGN_Plot_PlotInfLines_DoublePtr(label, values, values.Length, 0, sizeof<double>)
+
+        // ImPlot — Histogram (bins: use -1=Sturges, -2=Scott, -3=Rice, -4=Sqrt, or positive count)
+        static member PlotHistogram(label, values: float32[], ?bins: int, ?barScale: double, ?rangeMin: double, ?rangeMax: double) =
+            ImGuiNative.IGN_Plot_PlotHistogram_FloatPtr(label, values, values.Length,
+                defaultArg bins -1, defaultArg barScale 1.0, defaultArg rangeMin 0.0, defaultArg rangeMax 0.0, 0, sizeof<float32>)
+        static member PlotHistogram(label: string, values: double[], ?bins: int, ?barScale: double, ?rangeMin: double, ?rangeMax: double) =
+            ImGuiNative.IGN_Plot_PlotHistogram_DoublePtr(label, values, values.Length,
+                defaultArg bins -1, defaultArg barScale 1.0, defaultArg rangeMin 0.0, defaultArg rangeMax 0.0, 0, sizeof<double>)
+        static member PlotHistogram2D(label, xs: float32[], ys: float32[], ?xBins: int, ?yBins: int, ?xmin: double, ?xmax: double, ?ymin: double, ?ymax: double) =
+            ImGuiNative.IGN_Plot_PlotHistogram2D_FloatPtr(label, xs, ys, min xs.Length ys.Length,
+                defaultArg xBins -1, defaultArg yBins -1,
+                defaultArg xmin 0.0, defaultArg xmax 0.0, defaultArg ymin 0.0, defaultArg ymax 0.0, 0, sizeof<float32>)
+        static member PlotHistogram2D(label: string, xs: double[], ys: double[], ?xBins: int, ?yBins: int, ?xmin: double, ?xmax: double, ?ymin: double, ?ymax: double) =
+            ImGuiNative.IGN_Plot_PlotHistogram2D_DoublePtr(label, xs, ys, min xs.Length ys.Length,
+                defaultArg xBins -1, defaultArg yBins -1,
+                defaultArg xmin 0.0, defaultArg xmax 0.0, defaultArg ymin 0.0, defaultArg ymax 0.0, 0, sizeof<double>)
+
+        // ImPlot — Digital
+        static member PlotDigital(label, xs: float32[], ys: float32[]) =
+            ImGuiNative.IGN_Plot_PlotDigital_FloatPtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<float32>)
+        static member PlotDigital(label: string, xs: double[], ys: double[]) =
+            ImGuiNative.IGN_Plot_PlotDigital_DoublePtr(label, xs, ys, min xs.Length ys.Length, 0, sizeof<double>)
+
+        // ImPlot — Text & Dummy
+        static member PlotText(text: string, x: double, y: double, ?pixOffsetX: float32, ?pixOffsetY: float32) =
+            ImGuiNative.IGN_Plot_PlotText(text, x, y, defaultArg pixOffsetX 0f, defaultArg pixOffsetY 0f)
+        static member PlotDummy(labelId: string) =
+            ImGuiNative.IGN_Plot_PlotDummy(labelId)
+
+        // ImPlot3D — Triangle
+        static member PlotTriangle3D(label, xs: float32[], ys: float32[], zs: float32[]) =
+            ImGuiNative.IGN_Plot3D_PlotTriangle(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<float32>)
+        static member PlotTriangle3D(label: string, xs: double[], ys: double[], zs: double[]) =
+            ImGuiNative.IGN_Plot3D_PlotTriangle_Double(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<double>)
+
+        // ImPlot3D — Quad
+        static member PlotQuad3D(label, xs: float32[], ys: float32[], zs: float32[]) =
+            ImGuiNative.IGN_Plot3D_PlotQuad(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<float32>)
+        static member PlotQuad3D(label: string, xs: double[], ys: double[], zs: double[]) =
+            ImGuiNative.IGN_Plot3D_PlotQuad_Double(label, xs, ys, zs, min xs.Length (min ys.Length zs.Length), 0, sizeof<double>)
+
+        // ImPlot3D — Mesh
+        static member PlotMesh3D(label, xs: float32[], ys: float32[], zs: float32[], idxs: uint32[]) =
+            ImGuiNative.IGN_Plot3D_PlotMesh(label, xs, ys, zs, idxs, xs.Length, idxs.Length, 0, sizeof<float32>)
+        static member PlotMesh3D(label: string, xs: double[], ys: double[], zs: double[], idxs: uint32[]) =
+            ImGuiNative.IGN_Plot3D_PlotMesh_Double(label, xs, ys, zs, idxs, xs.Length, idxs.Length, 0, sizeof<double>)
+
+        // ImPlot3D — Text & Dummy
+        static member PlotText3D(text: string, x: double, y: double, z: double, ?angle: double, ?pixOffsetX: float32, ?pixOffsetY: float32) =
+            ImGuiNative.IGN_Plot3D_PlotText(text, x, y, z, defaultArg angle 0.0, defaultArg pixOffsetX 0f, defaultArg pixOffsetY 0f)
+        static member PlotDummy3D(labelId: string) =
+            ImGuiNative.IGN_Plot3D_PlotDummy(labelId)
 
         static member Build()                     = ImGuiNative.IGN_Font_Build()
         static member AddDefaultFont()            = ImGuiNative.IGN_Font_AddDefault()

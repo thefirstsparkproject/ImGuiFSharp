@@ -2,7 +2,7 @@ namespace ImGuiFSharp
 
 open System.Runtime.InteropServices
 
-module public NodeEditorNative =
+module internal NodeEditorNative =
     [<Literal>]
     let private lib = "ImGuiNative"
 
