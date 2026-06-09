@@ -4,3 +4,4 @@ addons/
 cpp/build/
 .godot/
 *.user
+.idea/
