@@ -15,12 +15,15 @@ jobs:
           submodules: true
 
       - name: Init cpp nested submodules
+        shell: bash
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
-          git -C cpp submodule update --init imgui_node_editor
+          git clone https://github.com/thedmd/imgui-node-editor.git cpp/imgui_node_editor
+          cd cpp/imgui_node_editor
+          git checkout 021aa0ea4da13fed864bafb2a92d4c5205076866
 
       - name: Install dependencies
         run: |
@@ -48,12 +51,15 @@ jobs:
           submodules: true
 
       - name: Init cpp nested submodules
+        shell: bash
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
-          git -C cpp submodule update --init imgui_node_editor
+          git clone https://github.com/thedmd/imgui-node-editor.git cpp/imgui_node_editor
+          cd cpp/imgui_node_editor
+          git checkout 021aa0ea4da13fed864bafb2a92d4c5205076866
 
       - name: Build C++ Library
         run: |
@@ -76,12 +82,15 @@ jobs:
           submodules: true
 
       - name: Init cpp nested submodules
+        shell: bash
         run: |
           git -C cpp submodule update --init imgui
           git -C cpp submodule update --init implot
           git -C cpp submodule update --init implot3d
           git -C cpp submodule update --init glfw
-          git -C cpp submodule update --init imgui_node_editor
+          git clone https://github.com/thedmd/imgui-node-editor.git cpp/imgui_node_editor
+          cd cpp/imgui_node_editor
+          git checkout 021aa0ea4da13fed864bafb2a92d4c5205076866
 
       - name: Build C++ Library
         run: |
