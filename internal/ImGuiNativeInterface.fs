@@ -200,6 +200,8 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_PopID()
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern uint32 IGN_GetID([<MarshalAs(UnmanagedType.LPUTF8Str)>] string str_id)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_ColorEdit4(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string label, nativeint col, ColorEdit flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -240,7 +242,39 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern uint32 IGN_DockSpace(uint32 id, float32 w, float32 h, DockNode flags)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_DockSpaceOverViewport(DockNode flags)
+    extern uint32 IGN_DockSpaceOverViewport(uint32 dockspace_id, DockNode flags)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_SetNextWindowDockID(uint32 dock_id, Cond cond)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern uint32 IGN_GetWindowDockID()
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_IsWindowDocked()
+
+    // DockBuilder API
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderDockWindow(
+        [<MarshalAs(UnmanagedType.LPUTF8Str)>] string window_name, uint32 node_id)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern uint32 IGN_DockBuilderAddNode(uint32 node_id, DockNode flags)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderSetNodeFlags(uint32 node_id, DockNode flags)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderRemoveNode(uint32 node_id)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderRemoveNodeDockedWindows(
+        uint32 node_id, [<MarshalAs(UnmanagedType.I1)>] bool clear_settings_refs)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderRemoveNodeChildNodes(uint32 node_id)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderSetNodePos(uint32 node_id, float32 pos_x, float32 pos_y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderSetNodeSize(uint32 node_id, float32 size_x, float32 size_y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern uint32 IGN_DockBuilderSplitNode(
+        uint32 node_id, Dir split_dir, float32 size_ratio_for_node_at_dir,
+        uint32& out_id_at_dir, uint32& out_id_at_opposite_dir)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_DockBuilderFinish(uint32 node_id)
 
     // ── ImPlot ────────────────────────────────────────────────────────────────
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
@@ -354,6 +388,10 @@ module internal ImGuiNative =
     extern void IGN_GetWindowPos(float32& x, float32& y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_GetWindowSize(float32& x, float32& y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_GetMainViewportWorkPos(float32& x, float32& y)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_GetMainViewportWorkSize(float32& x, float32& y)
 
     // ── Style ─────────────────────────────────────────────────────────────────
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]

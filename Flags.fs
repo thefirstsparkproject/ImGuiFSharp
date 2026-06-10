@@ -59,6 +59,16 @@ type DockNode =
     | NoResize = 32
     | AutoHideTabBar = 64
     | NoUndocking = 128
+    // Private/Internal flags
+    | DockSpace = 1024
+    | CentralNode = 2048
+    | NoTabBar = 4096
+    | HiddenTabBar = 8192
+    | NoWindowMenuButton = 16384
+    | NoCloseButton = 32768
+    | NoResizeX = 65536
+    | NoResizeY = 131072
+
 
 [<Flags>]
 type Combo =

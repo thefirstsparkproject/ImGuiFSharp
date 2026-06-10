@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Optimize>true</Optimize>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <Version>1.3.0</Version>
+        <Version>1.0.0-alpha1</Version>
         <PackageId>ImGuiFSharp</PackageId>
         <Authors>thefirstsparkproject</Authors>
         <RepositoryUrl>https://github.com/thefirstsparkproject/ImGuiFSharp</RepositoryUrl>
@@ -30,6 +30,7 @@
         <None Include="runtimes/osx-x64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-x64/native/" CopyToOutputDirectory="PreserveNewest"/>
         <None Include="runtimes/osx-arm64/native/libImGuiNative.dylib" Pack="true" PackagePath="runtimes/osx-arm64/native/" CopyToOutputDirectory="PreserveNewest"/>
         <Compile Include="Builder.fs"/>
+        <Compile Include="Application.fs"/>
         <Compile Include="BuilderExample.fs"/>
 
     </ItemGroup>

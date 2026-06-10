@@ -142,3 +142,11 @@ type PlotAxis =
     | Y1 = 3
     | Y2 = 4
     | Y3 = 5
+
+type Dir =
+    | None = -1
+    | Left = 0
+    | Right = 1
+    | Up = 2
+    | Down = 3
+

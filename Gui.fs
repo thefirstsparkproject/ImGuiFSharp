@@ -59,6 +59,55 @@ type public Gui =
     static member DockSpace(id, w, h, ?flags: DockNode) =
         ImGuiNative.IGN_DockSpace(id, w, h, defaultArg flags DockNode.None)
 
+    static member DockSpaceOverViewport(?dockspaceId, ?flags: DockNode) =
+        ImGuiNative.IGN_DockSpaceOverViewport(
+            defaultArg dockspaceId 0u, defaultArg flags DockNode.None)
+
+    static member SetNextWindowDockID(dockId, ?cond: Cond) =
+        ImGuiNative.IGN_SetNextWindowDockID(dockId, defaultArg cond Cond.None)
+
+    static member GetWindowDockID() =
+        ImGuiNative.IGN_GetWindowDockID()
+
+    static member IsWindowDocked() =
+        ImGuiNative.IGN_IsWindowDocked()
+
+    static member DockBuilderDockWindow(windowName, nodeId) =
+        ImGuiNative.IGN_DockBuilderDockWindow(windowName, nodeId)
+
+    static member DockBuilderAddNode(?nodeId, ?flags: DockNode) =
+        ImGuiNative.IGN_DockBuilderAddNode(
+            defaultArg nodeId 0u, defaultArg flags DockNode.None)
+
+    static member DockBuilderSetNodeFlags(nodeId, flags: DockNode) =
+        ImGuiNative.IGN_DockBuilderSetNodeFlags(nodeId, flags)
+
+    static member DockBuilderRemoveNode(nodeId) =
+        ImGuiNative.IGN_DockBuilderRemoveNode(nodeId)
+
+    static member DockBuilderRemoveNodeDockedWindows(nodeId, ?clearSettingsRefs) =
+        ImGuiNative.IGN_DockBuilderRemoveNodeDockedWindows(
+            nodeId, defaultArg clearSettingsRefs true)
+
+    static member DockBuilderRemoveNodeChildNodes(nodeId) =
+        ImGuiNative.IGN_DockBuilderRemoveNodeChildNodes(nodeId)
+
+    static member DockBuilderSetNodePos(nodeId, x, y) =
+        ImGuiNative.IGN_DockBuilderSetNodePos(nodeId, x, y)
+
+    static member DockBuilderSetNodeSize(nodeId, w, h) =
+        ImGuiNative.IGN_DockBuilderSetNodeSize(nodeId, w, h)
+
+    static member DockBuilderSplitNode(nodeId, splitDir: Dir, sizeRatioForNodeAtDir: float32) =
+        let mutable outIdAtDir = 0u
+        let mutable outIdAtOppositeDir = 0u
+        let _ = ImGuiNative.IGN_DockBuilderSplitNode(
+            nodeId, splitDir, sizeRatioForNodeAtDir, &outIdAtDir, &outIdAtOppositeDir)
+        outIdAtDir, outIdAtOppositeDir
+
+    static member DockBuilderFinish(nodeId) =
+        ImGuiNative.IGN_DockBuilderFinish(nodeId)
+
     static member SetNextWindowPos(x, y, ?cond: Cond) =
         ImGuiNative.IGN_SetNextWindowPos(x, y, defaultArg cond Cond.None)
     static member SetNextWindowSize(w, h, ?cond: Cond) =
@@ -75,6 +124,16 @@ type public Gui =
     static member GetWindowSize() =
         let mutable x, y = 0.f, 0.f
         ImGuiNative.IGN_GetWindowSize(&x, &y)
+        x, y
+
+    static member GetMainViewportWorkPos() =
+        let mutable x, y = 0.f, 0.f
+        ImGuiNative.IGN_GetMainViewportWorkPos(&x, &y)
+        x, y
+
+    static member GetMainViewportWorkSize() =
+        let mutable x, y = 0.f, 0.f
+        ImGuiNative.IGN_GetMainViewportWorkSize(&x, &y)
         x, y
 
     static member IsWindowFocused(?flags: Hovered) =
@@ -109,6 +168,7 @@ type public Gui =
 
     static member PushID(id) = ImGuiNative.IGN_PushID_Str(id)
     static member PopID()    = ImGuiNative.IGN_PopID()
+    static member GetID(id)  = ImGuiNative.IGN_GetID(id)
 
     // ── Scroll ────────────────────────────────────────────────────────────────
     static member GetScrollY()          = ImGuiNative.IGN_GetScrollY()
