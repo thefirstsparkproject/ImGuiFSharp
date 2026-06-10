@@ -17,6 +17,7 @@
         <Compile Include="Flags.fs"/>
         <Compile Include="Enums.fs"/>
         <Compile Include="internal/WindowInternal.fs"/>
+        <Compile Include="internal/ImGuiNativeInterface.fs"/>
         <Compile Include="internal/ImGuiInternal.fs"/>
         <Compile Include="internal/NodeEditorInternal.fs"/>
         <Compile Include="Window.fs"/>

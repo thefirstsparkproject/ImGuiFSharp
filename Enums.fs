@@ -129,6 +129,12 @@ type PlotScale =
     | Log10 = 2
     | SymLog = 3
 
+type TableBgTarget =
+    | None   = 0
+    | RowBg0 = 1
+    | RowBg1 = 2
+    | CellBg = 3
+
 type PlotAxis =
     | X1 = 0
     | X2 = 1

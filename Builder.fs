@@ -277,10 +277,10 @@ type Builder =
     static member unindent w = Gui.Unindent(w)
 
     // ── Text Inputs ──────────────────────────────────────────────────────────
-    static member inputText (label, buf: char[], ?flags: InputText) =
-        Gui.InputText(label, buf, ?flags = flags)
-    static member inputTextMultiline (label, buf: char[], ?width, ?height, ?flags: InputText) =
-        Gui.InputTextMultiline(label, buf, ?width = width, ?height = height, ?flags = flags)
+    static member inputText (label, value: string ref, ?flags: InputText) =
+        Gui.InputText(label, value, ?flags = flags)
+    static member inputTextMultiline (label, value: string ref, ?width, ?height, ?flags: InputText) =
+        Gui.InputTextMultiline(label, value, ?width = width, ?height = height, ?flags = flags)
 
     // ── Numerical Inputs ─────────────────────────────────────────────────────
     static member inputInt (label, v: int ref, ?step, ?stepFast, ?flags: InputText) =
@@ -322,6 +322,40 @@ type Builder =
     static member menuItem (label, ?shortcut, ?selected, ?enabled) =
         Gui.MenuItem(label, ?shortcut = shortcut, ?selected = selected, ?enabled = enabled)
 
+    // ── Layout Helpers ───────────────────────────────────────────────────────
+    static member separatorText label             = Gui.SeparatorText(label)
+    static member setNextItemWidth w              = Gui.SetNextItemWidth(w)
+    static member setItemDefaultFocus ()          = Gui.SetItemDefaultFocus()
+    static member calcTextSize text               = Gui.CalcTextSize(text)
+    static member getFrameHeight ()               = Gui.GetFrameHeight()
+    static member getTextLineHeight ()            = Gui.GetTextLineHeight()
+    static member getTextLineHeightWithSpacing () = Gui.GetTextLineHeightWithSpacing()
+    static member getFrameHeightWithSpacing ()    = Gui.GetFrameHeightWithSpacing()
+
+    // ── Scroll ────────────────────────────────────────────────────────────────
+    static member getScrollY ()          = Gui.GetScrollY()
+    static member getScrollMaxY ()       = Gui.GetScrollMaxY()
+    static member setScrollY y           = Gui.SetScrollY(y)
+    static member setScrollHereY ?ratio  = Gui.SetScrollHereY(?ratio = ratio)
+
+    // ── Window State ──────────────────────────────────────────────────────────
+    static member isWindowFocused (?flags: Hovered) = Gui.IsWindowFocused(?flags = flags)
+    static member isWindowHovered (?flags: Hovered) = Gui.IsWindowHovered(?flags = flags)
+
+    // ── Table Extras ──────────────────────────────────────────────────────────
+    static member tableSetupScrollFreeze (cols, rows) = Gui.TableSetupScrollFreeze(cols, rows)
+    static member tableSetBgColor (target: TableBgTarget, color: uint32, ?col) =
+        Gui.TableSetBgColor(target, color, ?columnN = col)
+
+    // ── Item Flags ────────────────────────────────────────────────────────────
+    static member itemFlag (option: ItemFlags) (enabled: bool) =
+        Scope.always (fun () -> Gui.PushItemFlag(option, enabled)) Gui.PopItemFlag
+
+    // ── Item State Queries ────────────────────────────────────────────────────
+    static member isVisible ()                    = Gui.IsItemVisible()
+    static member isEdited ()                     = Gui.IsItemEdited()
+    static member isDeactivatedAfterEdit ()       = Gui.IsItemDeactivatedAfterEdit()
+
     // ── Queries & State ──────────────────────────────────────────────────────
     static member isHovered (?flags: Hovered)              = Gui.IsItemHovered(?flags = flags)
     static member isActive ()                     = Gui.IsItemActive()
@@ -330,6 +364,19 @@ type Builder =
     static member isMouseDown (button: MouseButton)            = Gui.IsMouseDown(button)
     static member isMouseDoubleClicked (button: MouseButton)   = Gui.IsMouseDoubleClicked(button)
     static member getMousePos ()                  = Gui.GetMousePos()
+
+    // ── List Clipper ──────────────────────────────────────────────────────────
+    /// Efficiently render only the visible rows of a large uniform-height list.
+    ///
+    ///   do! Builder.clipper(rowCount, fun start finish ->
+    ///         for i in start .. finish - 1 do
+    ///             Builder.tableRow()
+    ///             Builder.text $"Row {i}")
+    static member clipper (itemCount: int, body: int -> int -> unit, ?itemHeight: float32) =
+        fun () ->
+            use c = new ListClipper(itemCount, ?itemHeight = itemHeight)
+            while c.Step() do
+                body c.DisplayStart c.DisplayEnd
 
     // ── Canvas & Custom Drawing ──────────────────────────────────────────────
     static member getCursorPos ()               = Gui.GetCursorScreenPos()
