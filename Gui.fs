@@ -301,6 +301,18 @@ type public Gui =
         v.Value <- vv; r
 
     // ── Color Editing ─────────────────────────────────────────────────────────
+    static member ColorEdit4(label, color: Color ref, ?flags: ColorEdit) =
+        let col = [| color.Value.R; color.Value.G; color.Value.B; color.Value.A |]
+        let h = GCHandle.Alloc(col, GCHandleType.Pinned)
+        try
+            let changed =
+                ImGuiNative.IGN_ColorEdit4(label, h.AddrOfPinnedObject(),
+                    defaultArg flags ColorEdit.None)
+            if changed then
+                color.Value <- { R = col.[0]; G = col.[1]; B = col.[2]; A = col.[3] }
+            changed
+        finally h.Free()
+
     static member ColorEdit4(label, col: float32[], ?flags: ColorEdit) =
         let h = GCHandle.Alloc(col, GCHandleType.Pinned)
         try ImGuiNative.IGN_ColorEdit4(label, h.AddrOfPinnedObject(),
@@ -342,8 +354,8 @@ type public Gui =
     static member TableNextRow(?rowFlags: TableRow, ?minH) =
         ImGuiNative.IGN_TableNextRow(defaultArg rowFlags TableRow.None, defaultArg minH 0f)
     static member TableNextColumn() = ImGuiNative.IGN_TableNextColumn()
-    static member TableSetBgColor(target: TableBgTarget, color: uint32, ?columnN) =
-        ImGuiNative.IGN_TableSetBgColor(int target, color, defaultArg columnN -1)
+    static member TableSetBgColor(target: TableBgTarget, color: Color, ?columnN) =
+        ImGuiNative.IGN_TableSetBgColor(int target, color.ToUint32(), defaultArg columnN -1)
 
     // ── Menus, Popups & Tooltips ──────────────────────────────────────────────
     static member BeginMenuBar() = ImGuiNative.IGN_BeginMenuBar()
@@ -420,39 +432,40 @@ type public Gui =
         ImGuiNative.IGN_GetCursorScreenPos(&x, &y)
         x, y
     static member SetCursorScreenPos(x, y) = ImGuiNative.IGN_SetCursorScreenPos(x, y)
-    static member DrawLine(p1_x, p1_y, p2_x, p2_y, col, ?thickness) =
-        ImGuiNative.IGN_DrawList_AddLine(p1_x, p1_y, p2_x, p2_y, col, defaultArg thickness 1.f)
-    static member DrawRect(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags: Draw, ?thickness) =
-        ImGuiNative.IGN_DrawList_AddRect(p1_x, p1_y, p2_x, p2_y, col,
+    static member DrawLine(p1_x, p1_y, p2_x, p2_y, col: Color, ?thickness) =
+        ImGuiNative.IGN_DrawList_AddLine(p1_x, p1_y, p2_x, p2_y, col.ToUint32(), defaultArg thickness 1.f)
+    static member DrawRect(p1_x, p1_y, p2_x, p2_y, col: Color, ?rounding, ?flags: Draw, ?thickness) =
+        ImGuiNative.IGN_DrawList_AddRect(p1_x, p1_y, p2_x, p2_y, col.ToUint32(),
             defaultArg rounding 0.f, defaultArg flags Draw.None, defaultArg thickness 1.f)
-    static member DrawRectFilled(p1_x, p1_y, p2_x, p2_y, col, ?rounding, ?flags: Draw) =
-        ImGuiNative.IGN_DrawList_AddRectFilled(p1_x, p1_y, p2_x, p2_y, col,
+    static member DrawRectFilled(p1_x, p1_y, p2_x, p2_y, col: Color, ?rounding, ?flags: Draw) =
+        ImGuiNative.IGN_DrawList_AddRectFilled(p1_x, p1_y, p2_x, p2_y, col.ToUint32(),
             defaultArg rounding 0.f, defaultArg flags Draw.None)
-    static member DrawRectFilledMultiColor(p1_x, p1_y, p2_x, p2_y, colUL, colUR, colBR, colBL) =
+    static member DrawRectFilledMultiColor(p1_x, p1_y, p2_x, p2_y, colUL: Color, colUR: Color, colBR: Color, colBL: Color) =
         ImGuiNative.IGN_DrawList_AddRectFilledMultiColor(p1_x, p1_y, p2_x, p2_y,
-            colUL, colUR, colBR, colBL)
-    static member DrawCircle(cx, cy, r, col, ?numSegments, ?thickness) =
-        ImGuiNative.IGN_DrawList_AddCircle(cx, cy, r, col,
+            colUL.ToUint32(), colUR.ToUint32(), colBR.ToUint32(), colBL.ToUint32())
+    static member DrawCircle(cx, cy, r, col: Color, ?numSegments, ?thickness) =
+        ImGuiNative.IGN_DrawList_AddCircle(cx, cy, r, col.ToUint32(),
             defaultArg numSegments 0, defaultArg thickness 1.f)
-    static member DrawCircleFilled(cx, cy, r, col, ?numSegments) =
-        ImGuiNative.IGN_DrawList_AddCircleFilled(cx, cy, r, col, defaultArg numSegments 0)
-    static member DrawTriangleFilled(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col) =
-        ImGuiNative.IGN_DrawList_AddTriangleFilled(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col)
-    static member DrawText(posX, posY, col, text) =
-        ImGuiNative.IGN_DrawList_AddText(posX, posY, col, text)
-    static member DrawPolyline(pointsX: float32[], pointsY: float32[], col, ?flags: Draw, ?thickness) =
+    static member DrawCircleFilled(cx, cy, r, col: Color, ?numSegments) =
+        ImGuiNative.IGN_DrawList_AddCircleFilled(cx, cy, r, col.ToUint32(), defaultArg numSegments 0)
+    static member DrawTriangleFilled(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col: Color) =
+        ImGuiNative.IGN_DrawList_AddTriangleFilled(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, col.ToUint32())
+    static member DrawText(posX, posY, col: Color, text) =
+        ImGuiNative.IGN_DrawList_AddText(posX, posY, col.ToUint32(), text)
+    static member DrawPolyline(pointsX: float32[], pointsY: float32[], col: Color, ?flags: Draw, ?thickness) =
         ImGuiNative.IGN_DrawList_AddPolyline(pointsX, pointsY,
-            min pointsX.Length pointsY.Length, col,
+            min pointsX.Length pointsY.Length, col.ToUint32(),
             defaultArg flags Draw.None, defaultArg thickness 1.f)
-    static member DrawConvexPolyFilled(pointsX: float32[], pointsY: float32[], col) =
+    static member DrawConvexPolyFilled(pointsX: float32[], pointsY: float32[], col: Color) =
         ImGuiNative.IGN_DrawList_AddConvexPolyFilled(pointsX, pointsY,
-            min pointsX.Length pointsY.Length, col)
+            min pointsX.Length pointsY.Length, col.ToUint32())
     static member DrawImage(texId, p1_x, p1_y, p2_x, p2_y,
-                            ?uv1_x, ?uv1_y, ?uv2_x, ?uv2_y, ?col) =
+                            ?uv1_x, ?uv1_y, ?uv2_x, ?uv2_y, ?col: Color) =
+        let color = defaultArg col Color.Default
         ImGuiNative.IGN_DrawList_AddImage(texId, p1_x, p1_y, p2_x, p2_y,
             defaultArg uv1_x 0.f, defaultArg uv1_y 0.f,
             defaultArg uv2_x 1.f, defaultArg uv2_y 1.f,
-            defaultArg col 0xFFFFFFFFu)
+            color.ToUint32())
     static member PushClipRect(minX, minY, maxX, maxY, ?intersectWithCurrent) =
         ImGuiNative.IGN_DrawList_PushClipRect(minX, minY, maxX, maxY,
             defaultArg intersectWithCurrent true)
@@ -645,18 +658,20 @@ type public Gui =
         finally for h in handles do if h.IsAllocated then h.Free()
 
     static member PlotCandles(label, xs: double[], opens: double[], highs: double[], lows: double[], closes: double[],
-                              ?width, ?bullColor, ?bearColor) =
+                              ?width, ?bullColor: Color, ?bearColor: Color) =
         let count = min xs.Length (min opens.Length (min highs.Length (min lows.Length closes.Length)))
+        let bc = defaultArg (Option.map (fun (c: Color) -> c.ToUint32()) bullColor) 0xFF00FF00u
+        let br = defaultArg (Option.map (fun (c: Color) -> c.ToUint32()) bearColor) 0xFF0000FFu
         ImGuiNative.IGN_Plot_PlotCandles(label, xs, opens, highs, lows, closes, count,
-            defaultArg width 0.67, defaultArg bullColor 0xFF00FF00u,
-            defaultArg bearColor 0xFF0000FFu, 0, sizeof<double>)
+            defaultArg width 0.67, bc, br, 0, sizeof<double>)
     static member PlotCandles(label, xs: DateTime[], opens: double[], highs: double[], lows: double[], closes: double[],
-                              ?width, ?bullColor, ?bearColor) =
+                              ?width, ?bullColor: Color, ?bearColor: Color) =
         let ts = xs |> Array.map (fun dt -> float (DateTimeOffset(dt).ToUnixTimeSeconds()))
         let count = min ts.Length (min opens.Length (min highs.Length (min lows.Length closes.Length)))
+        let bc = defaultArg (Option.map (fun (c: Color) -> c.ToUint32()) bullColor) 0xFF00FF00u
+        let br = defaultArg (Option.map (fun (c: Color) -> c.ToUint32()) bearColor) 0xFF0000FFu
         ImGuiNative.IGN_Plot_PlotCandles(label, ts, opens, highs, lows, closes, count,
-            defaultArg width 0.67, defaultArg bullColor 0xFF00FF00u,
-            defaultArg bearColor 0xFF0000FFu, 0, sizeof<double>)
+            defaultArg width 0.67, bc, br, 0, sizeof<double>)
 
     static member IsPlotHovered() = ImGuiNative.IGN_Plot_IsPlotHovered()
     static member GetPlotMousePos(yAxis) =
