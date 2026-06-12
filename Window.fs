@@ -100,6 +100,21 @@ type public Window(width: int, height: int, title: string, [<Optional; DefaultPa
 
     member this.IsFocused = IGN_Window_IsFocused(handle)
 
+    /// Upload raw RGBA pixel data to the GPU under this window's GL context.
+    /// Returns a texture ID usable with Gui.Image / Gui.ImageButton / Gui.DrawImage.
+    member this.LoadTexture(pixels: byte[], width: int, height: int) : uint32 =
+        this.MakeCurrent()
+        let handle = GCHandle.Alloc(pixels, GCHandleType.Pinned)
+        try
+            ImGuiNative.IGN_LoadTextureFromMemory(handle.AddrOfPinnedObject(), width, height)
+        finally
+            handle.Free()
+
+    /// Delete a texture previously created with LoadTexture.
+    member this.FreeTexture(texId: uint32) =
+        this.MakeCurrent()
+        Gui.FreeTexture(texId)
+
     member this.ShouldClose
         with get() = IGN_Window_ShouldClose(handle)
         and set(value: bool) = IGN_Window_SetShouldClose(handle, value)

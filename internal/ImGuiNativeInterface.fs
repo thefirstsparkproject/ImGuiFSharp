@@ -754,6 +754,12 @@ module internal ImGuiNative =
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_Plot3D_PlotDummy([<MarshalAs(UnmanagedType.LPUTF8Str)>] string label_id)
 
+    // ── Texture ───────────────────────────────────────────────────────────────
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern uint32 IGN_LoadTextureFromMemory(nativeint rgba_pixels, int width, int height)
+    [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
+    extern void IGN_FreeTexture(uint32 texId)
+
     // ── List Clipper ──────────────────────────────────────────────────────────
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern nativeint IGN_Clipper_Create()

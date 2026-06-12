@@ -745,3 +745,18 @@ type public Gui =
         ImGuiNative.IGN_Plot3D_PlotText(text, x, y, z,
             defaultArg angle 0.0, defaultArg pixOffsetX 0f, defaultArg pixOffsetY 0f)
     static member PlotDummy3D(labelId: string) = ImGuiNative.IGN_Plot3D_PlotDummy(labelId)
+
+    // ── Texture ───────────────────────────────────────────────────────────────
+    /// Upload raw RGBA pixel data to the GPU. Caller must ensure a GL context
+    /// is current (i.e. call Window.MakeCurrent() first).
+    /// Returns a texture ID usable with Image / ImageButton / DrawImage.
+    static member LoadTexture(pixels: byte[], width: int, height: int) : uint32 =
+        let handle = GCHandle.Alloc(pixels, GCHandleType.Pinned)
+        try
+            ImGuiNative.IGN_LoadTextureFromMemory(handle.AddrOfPinnedObject(), width, height)
+        finally
+            handle.Free()
+
+    /// Delete a texture previously created with LoadTexture.
+    static member FreeTexture(texId: uint32) =
+        ImGuiNative.IGN_FreeTexture(texId)

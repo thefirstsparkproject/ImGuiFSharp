@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Optimize>true</Optimize>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-        <Version>1.0.0-alpha1</Version>
+        <Version>1.0.0-alpha2</Version>
         <PackageId>ImGuiFSharp</PackageId>
         <Authors>thefirstsparkproject</Authors>
         <RepositoryUrl>https://github.com/thefirstsparkproject/ImGuiFSharp</RepositoryUrl>
@@ -21,9 +21,9 @@
         <Compile Include="internal/ImGuiInternal.fs"/>
         <Compile Include="internal/NodeEditorInternal.fs"/>
         <Compile Include="Color.fs" />
+        <Compile Include="Gui.fs" />
+        <Compile Include="NodeEditor.fs" />
         <Compile Include="Window.fs"/>
-        <Compile Include="Gui.fs"/>
-        <Compile Include="NodeEditor.fs"/>
     </ItemGroup>
     <ItemGroup>
         <None Include="runtimes/win-x64/native/ImGuiNative.dll" Pack="true" PackagePath="runtimes/win-x64/native/" CopyToOutputDirectory="PreserveNewest"/>
