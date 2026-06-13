@@ -222,11 +222,11 @@ module internal ImGuiNative =
     extern void IGN_ProgressBar(float32 fraction, float32 w, float32 h,
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string overlay)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
-    extern void IGN_Image(uint32 texId, float32 w, float32 h)
+    extern void IGN_Image(uint32 texId, float32 w, float32 h, float32 uv0_x, float32 uv0_y, float32 uv1_x, float32 uv1_y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern [<MarshalAs(UnmanagedType.I1)>] bool IGN_ImageButton(
         [<MarshalAs(UnmanagedType.LPUTF8Str)>] string id,
-        uint32 texId, float32 w, float32 h)
+        uint32 texId, float32 w, float32 h, float32 uv0_x, float32 uv0_y, float32 uv1_x, float32 uv1_y)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]
     extern void IGN_SetNextWindowPos(float32 x, float32 y, Cond cond)
     [<DllImport(LibName, CallingConvention = CallingConvention.Cdecl)>]

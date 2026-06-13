@@ -1,6 +1,8 @@
 namespace ImGuiFSharp
 
 open System
+open System.Numerics
+open System.Reflection
 open System.Runtime.InteropServices
 open ImGuiFSharp.Flags
 open ImGuiFSharp.Enums
@@ -35,6 +37,15 @@ type ListClipper(itemCount: int, ?itemHeight: float32) =
 // ══════════════════════════════════════════════════════════════════════════════
 // Gui — high-level F# façade. No pointers, char arrays, or unsafe types here.
 // ══════════════════════════════════════════════════════════════════════════════
+
+type ImageInfo =
+    {
+        Position : System.Drawing.Point
+        Size : System.Drawing.Size
+        U : Vector2
+        V : Vector2
+        mutable TextureId : uint32
+    }
 
 [<AbstractClass; Sealed>]
 type public Gui =
@@ -197,8 +208,15 @@ type public Gui =
     static member ProgressBar(fraction, ?w, ?h, ?overlay) =
         ImGuiNative.IGN_ProgressBar(fraction, defaultArg w -1f, defaultArg h 0f,
             defaultArg overlay Unchecked.defaultof<string>)
-    static member Image(texId, w, h) = ImGuiNative.IGN_Image(texId, w, h)
-    static member ImageButton(id, texId, w, h) = ImGuiNative.IGN_ImageButton(id, texId, w, h)
+    static member Image(texId, w, h, ?uv0_x, ?uv0_y, ?uv1_x, ?uv1_y) =
+        ImGuiNative.IGN_Image(texId, w, h, defaultArg uv0_x 0.f, defaultArg uv0_y 0.f, defaultArg uv1_x 1.f, defaultArg uv1_y 1.f)
+    static member Image(info: ImageInfo) =
+        ImGuiNative.IGN_Image(info.TextureId, float32 info.Size.Width, float32 info.Size.Height, info.U.X, info.U.Y, info.V.X, info.V.Y)
+
+    static member ImageButton(id, texId, w, h, ?uv0_x, ?uv0_y, ?uv1_x, ?uv1_y) =
+        ImGuiNative.IGN_ImageButton(id, texId, w, h, defaultArg uv0_x 0.f, defaultArg uv0_y 0.f, defaultArg uv1_x 1.f, defaultArg uv1_y 1.f)
+    static member ImageButton(id: string, info: ImageInfo) =
+        ImGuiNative.IGN_ImageButton(id, info.TextureId, float32 info.Size.Width, float32 info.Size.Height, info.U.X, info.U.Y, info.V.X, info.V.Y)
     static member Selectable(label, selected, ?flags: Selectable, ?width, ?height) =
         ImGuiNative.IGN_Selectable(label, selected,
             defaultArg flags Selectable.None, defaultArg width 0f, defaultArg height 0f)
@@ -745,6 +763,45 @@ type public Gui =
         ImGuiNative.IGN_Plot3D_PlotText(text, x, y, z,
             defaultArg angle 0.0, defaultArg pixOffsetX 0f, defaultArg pixOffsetY 0f)
     static member PlotDummy3D(labelId: string) = ImGuiNative.IGN_Plot3D_PlotDummy(labelId)
+
+    // ── Inspector — reflection-based property editor ──────────────────────────
+    static member Inspector(prefix: string, o: obj) =
+        Gui.PushID(prefix)
+        let result =
+            if Object.ReferenceEquals(o, null) then Gui.Text("null"); false
+            else
+                let mutable changed = false
+                let t = o.GetType()
+                for prop in t.GetProperties(BindingFlags.Public ||| BindingFlags.Instance) do
+                    let name = prop.Name
+                    let value = prop.GetValue(o)
+                    Gui.PushID(name)
+                    let canWrite = prop.CanWrite && (match prop.SetMethod with null -> false | m -> m.IsPublic)
+                    if canWrite then
+                        match value with
+                        | :? string as s ->
+                            let v = ref s
+                            if Gui.InputText(name, v) then prop.SetValue(o, v.Value); changed <- true
+                        | :? int as i ->
+                            let v = ref i
+                            if Gui.DragInt(name, v) then prop.SetValue(o, v.Value); changed <- true
+                        | :? float32 as f ->
+                            let v = ref f
+                            if Gui.DragFloat(name, v) then prop.SetValue(o, v.Value); changed <- true
+                        | :? double as d ->
+                            let v = ref d
+                            if Gui.DragDouble(name, v) then prop.SetValue(o, v.Value); changed <- true
+                        | :? bool as b ->
+                            let v = ref b
+                            if Gui.Checkbox(name, v) then prop.SetValue(o, v.Value); changed <- true
+                        | _ ->
+                            Gui.Text($"{name}: {value}")
+                    else
+                        Gui.Text($"{name}: {value}")
+                    Gui.PopID()
+                changed
+        Gui.PopID()
+        result
 
     // ── Texture ───────────────────────────────────────────────────────────────
     /// Upload raw RGBA pixel data to the GPU. Caller must ensure a GL context
